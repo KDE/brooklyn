@@ -1,5 +1,7 @@
 package bots;
 
+import bots.messages.BotMessage;
+import bots.messages.BotTextMessage;
 import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.Invoke;
 import org.javatuples.Triplet;
@@ -11,10 +13,8 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.kitteh.irc.client.library.element.Channel;
-import org.kitteh.irc.client.library.event.channel.ChannelJoinEvent;
 import org.kitteh.irc.client.library.event.channel.ChannelMessageEvent;
 import org.kitteh.irc.client.library.event.helper.ChannelUserListChangeEvent;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public final class IrcBot implements Bot {
     private static final String USERNAME_KEY = "username";
@@ -50,11 +50,11 @@ public final class IrcBot implements Bot {
     }
 
     @Override
-    public void sendMessage(final String text, final String channelTo, String channelFrom, Bot botFrom, String authorNick) {
-        String[] messagesWithoutNewline = text.split("[\r\n]"); // IRC doesn't allow CR / LF
+    public void sendMessage(BotTextMessage msg, String channelTo) {
+        String[] messagesWithoutNewline = msg.getText().split("[\r\n]"); // IRC doesn't allow CR / LF
         for(String messageToken : messagesWithoutNewline) {
             client.sendMessage(channelTo, String.format("%s/%s/%s: %s",
-                    botFrom.getClass().getSimpleName(), channelFrom, authorNick, messageToken));
+                    msg.getBotFrom().getClass().getSimpleName(), msg.getChannelFrom(), msg.getNicknameFrom(), messageToken));
         }
     }
 
@@ -63,9 +63,11 @@ public final class IrcBot implements Bot {
         final String channelFrom = message.getChannel().getName();
         final String authorNickname = message.getActor().getNick();
         final String text = message.getMessage();
+        final BotMessage msg = new BotMessage(authorNickname, channelFrom, this);
+        final BotTextMessage textMessage = new BotTextMessage(msg, text);
 
         for(Triplet<Bot, String, String> sendTo: sendToList) {
-            sendTo.getValue0().sendMessage(text, sendTo.getValue1(), channelFrom, this, authorNickname);
+            sendTo.getValue0().sendMessage(textMessage, sendTo.getValue1());
         }
     }
 
@@ -92,7 +94,10 @@ public final class IrcBot implements Bot {
                 else
                     channelFromName = EVERY_CHANNEL;
 
-                sendTo.getValue0().sendMessage(message, sendTo.getValue1(), channelFromName, this, authorNickname);
+                final BotMessage msg = new BotMessage(authorNickname, channelFromName, this);
+                final BotTextMessage textMessage = new BotTextMessage(msg, message);
+
+                sendTo.getValue0().sendMessage(textMessage, sendTo.getValue1());
             }
         }
     }

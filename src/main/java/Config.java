@@ -8,7 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class Config {
-    public static final String DEFAULT_FILENAME = "/etc/chat-bridge/conf.yml";
+    public static final String DEFAULT_FILENAME = "/etc/brooklyn/conf.yml";
     public static final String BOT_TYPE_KEY = "type";
     public static final String NAME_KEY = "name";
     public static final String BOT_KEY = "bot";

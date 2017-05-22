@@ -1,5 +1,7 @@
 package bots;
 
+import bots.messages.BotMessage;
+import bots.messages.BotTextMessage;
 import org.javatuples.Triplet;
 import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.TelegramBotsApi;
@@ -54,9 +56,11 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
             final String channelFrom = msg.getChat().getUserName();
             final String authorNickname = msg.getFrom().getUserName();
             final String text = msg.getText();
+            final BotMessage message = new BotMessage(authorNickname, channelFrom, this);
+            final BotTextMessage textMessage = new BotTextMessage(message, text);
 
             for(Triplet<Bot, String, String> sendTo: sendToList) {
-                sendTo.getValue0().sendMessage(text, sendTo.getValue1(), channelFrom, this, authorNickname);
+                sendTo.getValue0().sendMessage(textMessage, sendTo.getValue1());
             }
         }
     }
@@ -83,16 +87,17 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
     }
 
     @Override
-    public void sendMessage(final String text, final String channelTo, String channelFrom, Bot botFrom, String authorNick) {
+    public void sendMessage(BotTextMessage msg, String channelTo) {
         final SendMessage message = new SendMessage()
                 .setChatId(channelTo)
                 .setText(String.format("%s/%s/%s: %s",
-                        botFrom.getClass().getSimpleName(), channelFrom, authorNick, text));
+                        msg.getBotFrom().getClass().getSimpleName(), msg.getChannelFrom(),
+                        msg.getNicknameFrom(), msg.getText()));
 
         try {
             sendMessage(message);
         } catch (TelegramApiException e) {
-            System.err.println(String.format("Failed to send message from %s to TelegramBot", botFrom.getClass().getSimpleName()));
+            System.err.println(String.format("Failed to send message from %s to TelegramBot", msg.getBotFrom().getClass().getSimpleName()));
             e.printStackTrace();
         }
     }
