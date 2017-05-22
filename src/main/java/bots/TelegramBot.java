@@ -56,7 +56,7 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
     public void onUpdateReceived(Update update) {
         if (update.hasMessage()) {
             final Message msg = update.getMessage();
-            final String channelFrom = msg.getChat().getUserName();
+            final String channelFrom = msg.getChat().getTitle();
             final String authorNickname = msg.getFrom().getUserName();
             final BotMessage message = new BotMessage(authorNickname, channelFrom, this);
 
