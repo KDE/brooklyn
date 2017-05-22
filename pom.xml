@@ -9,7 +9,7 @@
     </properties>
 
     <groupId>groupId</groupId>
-    <artifactId>Chat Bridge</artifactId>
+    <artifactId>Brooklyn</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <dependencies>
