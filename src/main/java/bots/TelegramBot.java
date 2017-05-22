@@ -3,18 +3,23 @@ package bots;
 import bots.messages.BotImgMessage;
 import bots.messages.BotMessage;
 import bots.messages.BotTextMessage;
+import org.apache.commons.io.IOUtils;
 import org.javatuples.Triplet;
 import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.TelegramBotsApi;
+import org.telegram.telegrambots.api.methods.GetFile;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
-import org.telegram.telegrambots.api.objects.Message;
-import org.telegram.telegrambots.api.objects.Sticker;
-import org.telegram.telegrambots.api.objects.Update;
+import org.telegram.telegrambots.api.objects.*;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
 import org.telegram.telegrambots.exceptions.TelegramApiRequestException;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -61,16 +66,45 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
             final BotMessage message = new BotMessage(authorNickname, channelFrom, this);
 
             final Message telegramMessage = update.getMessage();
-            if(telegramMessage.hasText()) {
-                // Send plain text
+            // Send image
+            if(telegramMessage.hasPhoto()) {
+                final List<PhotoSize> photos = telegramMessage.getPhoto();
+                for(PhotoSize photo : photos) {
+                    final GetFile file = new GetFile();
+                    file.setFileId(photo.getFileId());
+                    try {
+                        final File img = getFile(file);
+                        final URL imgUrl = new URL(img.getFileUrl(configs.get(TOKEN_KEY)));
+                        final HttpURLConnection httpConn = (HttpURLConnection) imgUrl.openConnection();
+                        final InputStream inputStream = httpConn.getInputStream();
+                        final byte[] output = IOUtils.toByteArray(inputStream);
+
+                        final String text = msg.getText();
+                        final BotTextMessage textMessage = new BotTextMessage(message, text);
+                        final BotImgMessage imgMessage = new BotImgMessage(textMessage, output);
+
+                        for(Triplet<Bot, String, String> sendTo: sendToList) {
+                            sendTo.getValue0().sendMessage(imgMessage, sendTo.getValue1());
+                        }
+
+                        inputStream.close();
+                        httpConn.disconnect();
+                    } catch (TelegramApiException | IOException e) {
+                        System.err.println("Error loading the img received");
+                    }
+                }
+            }
+            // Send plain text
+            else if(telegramMessage.hasText()) {
                 final String text = msg.getText();
                 final BotTextMessage textMessage = new BotTextMessage(message, text);
 
                 for(Triplet<Bot, String, String> sendTo: sendToList) {
                     sendTo.getValue0().sendMessage(textMessage, sendTo.getValue1());
                 }
-            } else if(telegramMessage.getSticker() != null) {
-                // Send sticker
+            }
+            // Send sticker
+            else if(telegramMessage.getSticker() != null) {
                 final Sticker sticker = telegramMessage.getSticker();
                 final BotTextMessage textMessage = new BotTextMessage(message, sticker.getEmoji());
 
