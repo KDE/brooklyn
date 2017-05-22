@@ -47,4 +47,4 @@ bridges:
 
 ## License
 
-This software is relased under the GNU AGPL license.
+This software is released under the GNU AGPL license.
