@@ -1,9 +1,9 @@
 package bots.messages;
 
 public class BotTextMessage extends BotMessage {
-    private String text;
+    private final String text;
 
-    public BotTextMessage(BotMessage message, String text) {
+    public BotTextMessage(final BotMessage message, final String text) {
         super(message.getNicknameFrom(), message.getChannelFrom(), message.getBotFrom());
         this.text = text;
     }

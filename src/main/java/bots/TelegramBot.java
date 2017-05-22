@@ -1,5 +1,6 @@
 package bots;
 
+import bots.messages.BotImgMessage;
 import bots.messages.BotMessage;
 import bots.messages.BotTextMessage;
 import org.javatuples.Triplet;
@@ -7,10 +8,12 @@ import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.TelegramBotsApi;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
 import org.telegram.telegrambots.api.objects.Message;
+import org.telegram.telegrambots.api.objects.Sticker;
 import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
 import org.telegram.telegrambots.exceptions.TelegramApiRequestException;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -51,16 +54,29 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        if (update.hasMessage() && update.getMessage().hasText()) {
+        if (update.hasMessage()) {
             final Message msg = update.getMessage();
             final String channelFrom = msg.getChat().getUserName();
             final String authorNickname = msg.getFrom().getUserName();
-            final String text = msg.getText();
             final BotMessage message = new BotMessage(authorNickname, channelFrom, this);
-            final BotTextMessage textMessage = new BotTextMessage(message, text);
 
-            for(Triplet<Bot, String, String> sendTo: sendToList) {
-                sendTo.getValue0().sendMessage(textMessage, sendTo.getValue1());
+            final Message telegramMessage = update.getMessage();
+            if(telegramMessage.hasText()) {
+                // Send plain text
+                final String text = msg.getText();
+                final BotTextMessage textMessage = new BotTextMessage(message, text);
+
+                for(Triplet<Bot, String, String> sendTo: sendToList) {
+                    sendTo.getValue0().sendMessage(textMessage, sendTo.getValue1());
+                }
+            } else if(telegramMessage.getSticker() != null) {
+                // Send sticker
+                final Sticker sticker = telegramMessage.getSticker();
+                final BotTextMessage textMessage = new BotTextMessage(message, sticker.getEmoji());
+
+                for(Triplet<Bot, String, String> sendTo: sendToList) {
+                    sendTo.getValue0().sendMessage(textMessage, sendTo.getValue1());
+                }
             }
         }
     }
@@ -100,5 +116,10 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
             System.err.println(String.format("Failed to send message from %s to TelegramBot", msg.getBotFrom().getClass().getSimpleName()));
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void sendMessage(BotImgMessage msg, String channelTo) {
+        throw new NotImplementedException();
     }
 }

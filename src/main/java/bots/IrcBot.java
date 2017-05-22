@@ -1,5 +1,6 @@
 package bots;
 
+import bots.messages.BotImgMessage;
 import bots.messages.BotMessage;
 import bots.messages.BotTextMessage;
 import net.engio.mbassy.listener.Handler;
@@ -15,6 +16,7 @@ import java.util.Optional;
 import org.kitteh.irc.client.library.element.Channel;
 import org.kitteh.irc.client.library.event.channel.ChannelMessageEvent;
 import org.kitteh.irc.client.library.event.helper.ChannelUserListChangeEvent;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public final class IrcBot implements Bot {
     private static final String USERNAME_KEY = "username";
@@ -100,5 +102,10 @@ public final class IrcBot implements Bot {
                 sendTo.getValue0().sendMessage(textMessage, sendTo.getValue1());
             }
         }
+    }
+
+    @Override
+    public void sendMessage(BotImgMessage msg, String channelTo) {
+        throw new NotImplementedException();
     }
 }
