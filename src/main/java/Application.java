@@ -80,11 +80,11 @@ public class Application {
                         final String toBotId = channelToBotId(toChannelId, channelsConfig);
                         if(toBotId != null) {
                             final Bot toBot = bots.get(toBotId);
-                            if(fromBot != toBot) {
-                                final Map<String, String> toChannelConfig = (Map<String, String>) channelsConfig.get(toChannelId);
-                                final Map<String, String> fromChannelConfig = (Map<String, String>) channelsConfig.get(fromChannelId);
+                            final Map<String, String> toChannelConfig = (Map<String, String>) channelsConfig.get(toChannelId);
+                            final Map<String, String> fromChannelConfig = (Map<String, String>) channelsConfig.get(fromChannelId);
+
+                            if(fromChannelId != toChannelId)
                                 fromBot.addBridge(toBot, toChannelConfig.get(Config.NAME_KEY), fromChannelConfig.get(Config.NAME_KEY));
-                            }
                         }
                     }
                 }

@@ -9,12 +9,14 @@ import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.TelegramBotsApi;
 import org.telegram.telegrambots.api.methods.GetFile;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
+import org.telegram.telegrambots.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.api.objects.*;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
 import org.telegram.telegrambots.exceptions.TelegramApiRequestException;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -61,7 +63,8 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
     public void onUpdateReceived(Update update) {
         if (update.hasMessage()) {
             final Message msg = update.getMessage();
-            final String channelFrom = msg.getChat().getTitle();
+            final Chat chat = msg.getChat();
+            final String channelFrom = chat.getTitle();
             final String authorNickname = msg.getFrom().getUserName();
             final BotMessage message = new BotMessage(authorNickname, channelFrom, this);
 
@@ -84,7 +87,8 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
                         final BotImgMessage imgMessage = new BotImgMessage(textMessage, photo.getFilePath(), output);
 
                         for(Triplet<Bot, String, String> sendTo: sendToList) {
-                            sendTo.getValue0().sendMessage(imgMessage, sendTo.getValue1());
+                            if(sendTo.getValue2().equals(chat.getId().toString()))
+                                sendTo.getValue0().sendMessage(imgMessage, sendTo.getValue1());
                         }
 
                         inputStream.close();
@@ -100,7 +104,8 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
                 final BotTextMessage textMessage = new BotTextMessage(message, text);
 
                 for(Triplet<Bot, String, String> sendTo: sendToList) {
-                    sendTo.getValue0().sendMessage(textMessage, sendTo.getValue1());
+                    if(sendTo.getValue2().equals(chat.getId().toString()))
+                        sendTo.getValue0().sendMessage(textMessage, sendTo.getValue1());
                 }
             }
             // Send sticker
@@ -109,7 +114,8 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
                 final BotTextMessage textMessage = new BotTextMessage(message, sticker.getEmoji());
 
                 for(Triplet<Bot, String, String> sendTo: sendToList) {
-                    sendTo.getValue0().sendMessage(textMessage, sendTo.getValue1());
+                    if(sendTo.getValue2().equals(chat.getId().toString()))
+                        sendTo.getValue0().sendMessage(textMessage, sendTo.getValue1());
                 }
             }
         }
@@ -143,7 +149,6 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
                 .setText(String.format("%s/%s/%s: %s",
                         msg.getBotFrom().getClass().getSimpleName(), msg.getChannelFrom(),
                         msg.getNicknameFrom(), msg.getText()));
-
         try {
             sendMessage(message);
         } catch (TelegramApiException e) {
@@ -153,7 +158,27 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
     }
 
     @Override
-    public void sendMessage(BotImgMessage msg, String channelTo) {
-        throw new NotImplementedException();
+    public void sendMessage(final BotImgMessage msg, final String channelTo) {
+        final SendPhoto message = new SendPhoto()
+                .setChatId(channelTo);
+
+        if(msg.getText() != null)
+                message.setCaption(String.format("%s/%s/%s: %s",
+                        msg.getBotFrom().getClass().getSimpleName(), msg.getChannelFrom(),
+                        msg.getNicknameFrom(), msg.getText()));
+        else
+            message.setCaption(String.format("%s/%s/%s",
+                    msg.getBotFrom().getClass().getSimpleName(), msg.getChannelFrom(),
+                    msg.getNicknameFrom()));
+
+        final InputStream imageStream = new ByteArrayInputStream(msg.getImg());
+        message.setNewPhoto(msg.getFilename(), imageStream);
+
+        try {
+            sendPhoto(message);
+        } catch (TelegramApiException e) {
+            System.err.println(String.format("Failed to send message from %s to TelegramBot", msg.getBotFrom().getClass().getSimpleName()));
+            e.printStackTrace();
+        }
     }
 }

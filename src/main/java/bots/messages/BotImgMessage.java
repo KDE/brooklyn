@@ -11,4 +11,12 @@ public class BotImgMessage extends BotTextMessage {
         this.img = img;
         this.filename = filename;
     }
+
+    public String getFilename() {
+        return filename;
+    }
+
+    public byte[] getImg() {
+        return img;
+    }
 }

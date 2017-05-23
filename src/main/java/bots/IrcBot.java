@@ -105,7 +105,7 @@ public final class IrcBot implements Bot {
     }
 
     @Override
-    public void sendMessage(BotImgMessage msg, String channelTo) {
-        throw new NotImplementedException();
+    public void sendMessage(final BotImgMessage msg, final String channelTo) {
+        ;
     }
 }
