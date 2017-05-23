@@ -72,30 +72,30 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
             // Send image
             if(telegramMessage.hasPhoto()) {
                 final List<PhotoSize> photos = telegramMessage.getPhoto();
-                for(PhotoSize photo : photos) {
-                    final GetFile file = new GetFile();
-                    file.setFileId(photo.getFileId());
-                    try {
-                        final File img = getFile(file);
-                        final URL imgUrl = new URL(img.getFileUrl(configs.get(TOKEN_KEY)));
-                        final HttpURLConnection httpConn = (HttpURLConnection) imgUrl.openConnection();
-                        final InputStream inputStream = httpConn.getInputStream();
-                        final byte[] output = IOUtils.toByteArray(inputStream);
 
-                        final String text = msg.getText();
-                        final BotTextMessage textMessage = new BotTextMessage(message, text);
-                        final BotImgMessage imgMessage = new BotImgMessage(textMessage, photo.getFilePath(), output);
+                PhotoSize photo = photos.get(photos.size()-1);
+                final GetFile file = new GetFile();
+                file.setFileId(photo.getFileId());
+                try {
+                    final File img = getFile(file);
+                    final URL imgUrl = new URL(img.getFileUrl(configs.get(TOKEN_KEY)));
+                    final HttpURLConnection httpConn = (HttpURLConnection) imgUrl.openConnection();
+                    final InputStream inputStream = httpConn.getInputStream();
+                    final byte[] output = IOUtils.toByteArray(inputStream);
 
-                        for(Triplet<Bot, String, String> sendTo: sendToList) {
-                            if(sendTo.getValue2().equals(chat.getId().toString()))
-                                sendTo.getValue0().sendMessage(imgMessage, sendTo.getValue1());
-                        }
+                    final String text = msg.getText();
+                    final BotTextMessage textMessage = new BotTextMessage(message, text);
+                    final BotImgMessage imgMessage = new BotImgMessage(textMessage, photo.getFilePath(), output);
 
-                        inputStream.close();
-                        httpConn.disconnect();
-                    } catch (TelegramApiException | IOException e) {
-                        System.err.println("Error loading the img received");
+                    for(Triplet<Bot, String, String> sendTo: sendToList) {
+                        if(sendTo.getValue2().equals(chat.getId().toString()))
+                            sendTo.getValue0().sendMessage(imgMessage, sendTo.getValue1());
                     }
+
+                    inputStream.close();
+                    httpConn.disconnect();
+                } catch (TelegramApiException | IOException e) {
+                    System.err.println("Error loading the img received");
                 }
             }
             // Send plain text

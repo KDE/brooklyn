@@ -74,6 +74,7 @@ public final class IrcBot implements Bot {
     }
 
     @Handler
+    // TODO: fixare anche qui invii multipli
     public void onJoin(final ChannelUserListChangeEvent event) {
         final String authorNickname = event.getUser().getNick();
         if(!authorNickname.equals(client.getNick())) {
