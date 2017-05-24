@@ -74,34 +74,31 @@ public final class IrcBot implements Bot {
     }
 
     @Handler
-    // TODO: fixare anche qui invii multipli
     public void onJoin(final ChannelUserListChangeEvent event) {
         final String authorNickname = event.getUser().getNick();
         if(!authorNickname.equals(client.getNick())) {
             final Optional<Channel> channelFrom = event.getAffectedChannel();
             final ChannelUserListChangeEvent.Change change = event.getChange();
-            for(Triplet<Bot, String, String> sendTo: sendToList) {
-                final String message;
-                if (change.compareTo(ChannelUserListChangeEvent.Change.JOIN) == 0)
-                    message = String.format("%s joined the channel", authorNickname);
-                else {
-                    if(channelFrom.isPresent())
-                        message = String.format("%s leaved the channel", authorNickname);
-                    else
-                        message = String.format("%s leaved", authorNickname);
-                }
 
-                final String channelFromName;
-                if(channelFrom.isPresent())
-                    channelFromName = channelFrom.get().getName();
+            final String channelFromName;
+            if(channelFrom.isPresent())
+                channelFromName = channelFrom.get().getName();
+            else
+                channelFromName = EVERY_CHANNEL;
+
+            final String message;
+            if (change.compareTo(ChannelUserListChangeEvent.Change.JOIN) == 0)
+                message = String.format("%s joined the channel", authorNickname);
+            else {
+                if (channelFrom.isPresent())
+                    message = String.format("%s leaved the channel", authorNickname);
                 else
-                    channelFromName = EVERY_CHANNEL;
-
-                final BotMessage msg = new BotMessage(authorNickname, channelFromName, this);
-                final BotTextMessage textMessage = new BotTextMessage(msg, message);
-
-                sendTo.getValue0().sendMessage(textMessage, sendTo.getValue1());
+                    message = String.format("%s leaved", authorNickname);
             }
+
+            final BotMessage msg = new BotMessage(authorNickname, channelFromName, this);
+            final BotTextMessage textMessage = new BotTextMessage(msg, message);
+            Bot.sendMessage(textMessage, sendToList, channelFromName);
         }
     }
 

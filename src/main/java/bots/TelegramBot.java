@@ -85,12 +85,8 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
 
                     final String text = msg.getText();
                     final BotTextMessage textMessage = new BotTextMessage(message, text);
-                    final BotImgMessage imgMessage = new BotImgMessage(textMessage, photo.getFilePath(), output);
-
-                    for(Triplet<Bot, String, String> sendTo: sendToList) {
-                        if(sendTo.getValue2().equals(chat.getId().toString()))
-                            sendTo.getValue0().sendMessage(imgMessage, sendTo.getValue1());
-                    }
+                    final BotImgMessage imgMessage = new BotImgMessage(textMessage, "img.jpg", output);
+                    Bot.sendMessage(imgMessage, sendToList, chat.getId().toString());
 
                     inputStream.close();
                     httpConn.disconnect();
@@ -102,21 +98,13 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
             else if(telegramMessage.hasText()) {
                 final String text = msg.getText();
                 final BotTextMessage textMessage = new BotTextMessage(message, text);
-
-                for(Triplet<Bot, String, String> sendTo: sendToList) {
-                    if(sendTo.getValue2().equals(chat.getId().toString()))
-                        sendTo.getValue0().sendMessage(textMessage, sendTo.getValue1());
-                }
+                Bot.sendMessage(textMessage, sendToList, chat.getId().toString());
             }
             // Send sticker
             else if(telegramMessage.getSticker() != null) {
                 final Sticker sticker = telegramMessage.getSticker();
                 final BotTextMessage textMessage = new BotTextMessage(message, sticker.getEmoji());
-
-                for(Triplet<Bot, String, String> sendTo: sendToList) {
-                    if(sendTo.getValue2().equals(chat.getId().toString()))
-                        sendTo.getValue0().sendMessage(textMessage, sendTo.getValue1());
-                }
+                Bot.sendMessage(textMessage, sendToList, chat.getId().toString());
             }
         }
     }
