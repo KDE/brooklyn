@@ -25,7 +25,8 @@ public final class IrcBot implements Bot {
     private Client client;
 
     @Override
-    public boolean init(final Map<String, String> configs, final String[] channels) {
+    public boolean init(final Map<String, String> configs, final String[] channels,
+                        final Map<String, String> webserverConfig) {
         if (!configs.containsKey(USERNAME_KEY))
             return false;
         if (!configs.containsKey(HOST_KEY))

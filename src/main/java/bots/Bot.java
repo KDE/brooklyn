@@ -11,7 +11,8 @@ import java.util.Map;
 public interface Bot {
     String EVERY_CHANNEL = "*";
 
-    boolean init(final Map<String, String> configs, final String[] channels);
+    boolean init(final Map<String, String> configs, final String[] channels,
+                 Map<String, String> webserverConfig);
 
     void addBridge(final Bot bot, final String channelTo, final String channelFrom);
     

@@ -48,7 +48,8 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
     }
 
     @Override
-    public boolean init(final Map<String, String> botConfigs, final String[] channels) {
+    public boolean init(final Map<String, String> botConfigs, final String[] channels,
+                        final Map<String, String> webserverConfig) {
         configs = botConfigs;
 
         try {

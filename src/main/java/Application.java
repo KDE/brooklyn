@@ -23,15 +23,17 @@ public class Application {
         }
 
         final Map<String, Object> channelsConfig = conf.getChannels();
+        final Map<String, String> webserverConfig = conf.getWebserverConfig();
 
-        final Map<String, Bot> bots = initBots(conf.getBots(), channelsConfig);
+        final Map<String, Bot> bots = initBots(conf.getBots(), channelsConfig, webserverConfig);
         manageBridges(bots, channelsConfig, conf.getBridges());
 
         handleShutdown();
     }
 
     private static Map<String, Bot> initBots(final Map<String, Object> botsConfig,
-                                             final Map<String, Object> channelsConfig) {
+                                             final Map<String, Object> channelsConfig,
+                                             final Map<String, String> webserverConfig) {
         final Map<String, Bot> bots = new LinkedHashMap<String, Bot>();
         for (Map.Entry<String, Object> entry : botsConfig.entrySet()) {
             final Map<String, String> botConfig = (Map<String, String>) entry.getValue();
@@ -40,7 +42,7 @@ public class Application {
                 if (newClass instanceof Bot) {
                     final Bot bot = (Bot) newClass;
                     final String[] channels = getChannelsName(entry.getKey(), channelsConfig);
-                    if (bot.init(botConfig, channels)) {
+                    if (bot.init(botConfig, channels, webserverConfig)) {
                         bots.put(entry.getKey(), bot);
                         System.out.println(String.format("Bot '%s' initialized.", entry.getKey()));
                     } else
