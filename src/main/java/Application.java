@@ -10,8 +10,8 @@ public class Application {
         TelegramBot.init();
 
         final Config conf;
-        if(args.length < 1)
-        conf = new Config(Config.DEFAULT_FILENAME);
+        if (args.length < 1)
+            conf = new Config(Config.DEFAULT_FILENAME);
         else
             conf = new Config(args[0]);
 
@@ -76,16 +76,16 @@ public class Application {
         for (ArrayList<String> bridgeConfig : bridgesConfig) {
             for (String fromChannelId : bridgeConfig) {
                 final String fromBotId = channelToBotId(fromChannelId, channelsConfig);
-                if(fromBotId != null) {
+                if (fromBotId != null) {
                     final Bot fromBot = bots.get(fromBotId);
                     for (String toChannelId : bridgeConfig) {
                         final String toBotId = channelToBotId(toChannelId, channelsConfig);
-                        if(toBotId != null) {
+                        if (toBotId != null) {
                             final Bot toBot = bots.get(toBotId);
                             final Map<String, String> toChannelConfig = (Map<String, String>) channelsConfig.get(toChannelId);
                             final Map<String, String> fromChannelConfig = (Map<String, String>) channelsConfig.get(fromChannelId);
 
-                            if(fromChannelId != toChannelId)
+                            if (fromChannelId != toChannelId)
                                 fromBot.addBridge(toBot, toChannelConfig.get(Config.NAME_KEY), fromChannelConfig.get(Config.NAME_KEY));
                         }
                     }

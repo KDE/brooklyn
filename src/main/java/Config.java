@@ -70,7 +70,9 @@ public class Config {
         return bridges;
     }
 
-    public Map<String, String> getWebserverConfig() { return webserver; }
+    public Map<String, String> getWebserverConfig() {
+        return webserver;
+    }
 
     private boolean isValid(final Map<String, Object> settings) {
         if (!settings.containsKey(BOTS_KEY) ||

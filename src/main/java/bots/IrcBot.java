@@ -7,16 +7,14 @@ import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.Invoke;
 import org.javatuples.Triplet;
 import org.kitteh.irc.client.library.Client;
+import org.kitteh.irc.client.library.element.Channel;
+import org.kitteh.irc.client.library.event.channel.ChannelMessageEvent;
+import org.kitteh.irc.client.library.event.helper.ChannelUserListChangeEvent;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
-import org.kitteh.irc.client.library.element.Channel;
-import org.kitteh.irc.client.library.event.channel.ChannelMessageEvent;
-import org.kitteh.irc.client.library.event.helper.ChannelUserListChangeEvent;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public final class IrcBot implements Bot {
     private static final String USERNAME_KEY = "username";
@@ -55,7 +53,7 @@ public final class IrcBot implements Bot {
     @Override
     public void sendMessage(BotTextMessage msg, String channelTo) {
         String[] messagesWithoutNewline = msg.getText().split("[\r\n]"); // IRC doesn't allow CR / LF
-        for(String messageToken : messagesWithoutNewline) {
+        for (String messageToken : messagesWithoutNewline) {
             client.sendMessage(channelTo, String.format("%s/%s/%s: %s",
                     msg.getBotFrom().getClass().getSimpleName(), msg.getChannelFrom(), msg.getNicknameFrom(), messageToken));
         }
@@ -69,7 +67,7 @@ public final class IrcBot implements Bot {
         final BotMessage msg = new BotMessage(authorNickname, channelFrom, this);
         final BotTextMessage textMessage = new BotTextMessage(msg, text);
 
-        for(Triplet<Bot, String, String> sendTo: sendToList) {
+        for (Triplet<Bot, String, String> sendTo : sendToList) {
             sendTo.getValue0().sendMessage(textMessage, sendTo.getValue1());
         }
     }
@@ -77,12 +75,12 @@ public final class IrcBot implements Bot {
     @Handler
     public void onJoin(final ChannelUserListChangeEvent event) {
         final String authorNickname = event.getUser().getNick();
-        if(!authorNickname.equals(client.getNick())) {
+        if (!authorNickname.equals(client.getNick())) {
             final Optional<Channel> channelFrom = event.getAffectedChannel();
             final ChannelUserListChangeEvent.Change change = event.getChange();
 
             final String channelFromName;
-            if(channelFrom.isPresent())
+            if (channelFrom.isPresent())
                 channelFromName = channelFrom.get().getName();
             else
                 channelFromName = EVERY_CHANNEL;
@@ -105,6 +103,7 @@ public final class IrcBot implements Bot {
 
     @Override
     public void sendMessage(final BotImgMessage msg, final String channelTo) {
-        ;
+        byte[] data = msg.getImg();
+
     }
 }

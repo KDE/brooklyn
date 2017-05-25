@@ -14,13 +14,11 @@ import org.telegram.telegrambots.api.objects.*;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
 import org.telegram.telegrambots.exceptions.TelegramApiRequestException;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -71,10 +69,10 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
 
             final Message telegramMessage = update.getMessage();
             // Send image
-            if(telegramMessage.hasPhoto()) {
+            if (telegramMessage.hasPhoto()) {
                 final List<PhotoSize> photos = telegramMessage.getPhoto();
 
-                PhotoSize photo = photos.get(photos.size()-1);
+                PhotoSize photo = photos.get(photos.size() - 1);
                 final GetFile file = new GetFile();
                 file.setFileId(photo.getFileId());
                 try {
@@ -97,13 +95,13 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
             }
 
             // Send plain text
-            else if(telegramMessage.hasText()) {
+            else if (telegramMessage.hasText()) {
                 final String text = msg.getText();
                 final BotTextMessage textMessage = new BotTextMessage(message, text);
                 Bot.sendMessage(textMessage, sendToList, chat.getId().toString());
             }
             // Send sticker
-            else if(telegramMessage.getSticker() != null) {
+            else if (telegramMessage.getSticker() != null) {
                 final Sticker sticker = telegramMessage.getSticker();
                 final BotTextMessage textMessage = new BotTextMessage(message, sticker.getEmoji());
                 Bot.sendMessage(textMessage, sendToList, chat.getId().toString());
@@ -152,10 +150,10 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
         final SendPhoto message = new SendPhoto()
                 .setChatId(channelTo);
 
-        if(msg.getText() != null)
-                message.setCaption(String.format("%s/%s/%s: %s",
-                        msg.getBotFrom().getClass().getSimpleName(), msg.getChannelFrom(),
-                        msg.getNicknameFrom(), msg.getText()));
+        if (msg.getText() != null)
+            message.setCaption(String.format("%s/%s/%s: %s",
+                    msg.getBotFrom().getClass().getSimpleName(), msg.getChannelFrom(),
+                    msg.getNicknameFrom(), msg.getText()));
         else
             message.setCaption(String.format("%s/%s/%s",
                     msg.getBotFrom().getClass().getSimpleName(), msg.getChannelFrom(),
