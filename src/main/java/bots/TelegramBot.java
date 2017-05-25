@@ -84,7 +84,7 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
 
                     final String text = msg.getText();
                     final BotTextMessage textMessage = new BotTextMessage(message, text);
-                    final BotImgMessage imgMessage = new BotImgMessage(textMessage, "img.jpg", output);
+                    final BotImgMessage imgMessage = new BotImgMessage(textMessage, "jpg", output);
                     Bot.sendMessage(imgMessage, sendToList, chat.getId().toString());
 
                     inputStream.close();
@@ -160,7 +160,7 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
                     msg.getNicknameFrom()));
 
         final InputStream imageStream = new ByteArrayInputStream(msg.getImg());
-        message.setNewPhoto(msg.getFilename(), imageStream);
+        message.setNewPhoto("img." + msg.getFileExtension(), imageStream);
 
         try {
             sendPhoto(message);
