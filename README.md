@@ -18,7 +18,7 @@ The application needs a config file.
 
 The default path is `/etc/brooklyn/conf.yml` but you can define a custom path, passing it as a first parameter (e.g. `java -jar brooklyn.jar /new/path`).
 
-## conf.yml
+### conf.yml
 
 This is a self-explanatory example of the configuration file.
 
@@ -43,7 +43,14 @@ bridges:
   -
     - ch1
     - ch2
+webserver:
+  content-folder: "/var/www/html"
+  base-url: "http://localhost/192.168.1.1/"
 ```
+
+### Webserver
+
+You need also a webserver (e.g. nginx) to support attachments in protocols like IRC.
 
 ## License
 

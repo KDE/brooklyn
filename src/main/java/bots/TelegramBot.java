@@ -94,6 +94,7 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
                     System.err.println("Error loading the img received");
                 }
             }
+
             // Send plain text
             else if(telegramMessage.hasText()) {
                 final String text = msg.getText();

@@ -15,10 +15,12 @@ public class Config {
     private static final String BOTS_KEY = "bots";
     private static final String CHANNELS_KEY = "channels";
     private static final String BRIDGES_KEY = "bridges";
+    private static final String WEBSERVER_KEY = "webserver";
     private String fileName;
     private Map<String, Object> bots;
     private Map<String, Object> channels;
     private ArrayList<ArrayList<String>> bridges;
+    private Map<String, String> webserver;
 
     public Config(final String configFileName) {
         bots = new LinkedHashMap<String, Object>();
@@ -53,6 +55,7 @@ public class Config {
         bots = (Map<String, Object>) settings.get(BOTS_KEY);
         channels = (Map<String, Object>) settings.get(CHANNELS_KEY);
         bridges = (ArrayList) settings.get(BRIDGES_KEY);
+        webserver = (Map<String, String>) settings.get(WEBSERVER_KEY);
     }
 
     public Map<String, Object> getBots() {
@@ -67,20 +70,25 @@ public class Config {
         return bridges;
     }
 
+    public Map<String, String> getWebserverConfig() { return webserver; }
+
     private boolean isValid(final Map<String, Object> settings) {
         if (!settings.containsKey(BOTS_KEY) ||
                 !settings.containsKey(CHANNELS_KEY) ||
-                !settings.containsKey(BRIDGES_KEY))
+                !settings.containsKey(BRIDGES_KEY) ||
+                !settings.containsKey(WEBSERVER_KEY))
             return false;
 
         if (!(settings.get(BOTS_KEY) instanceof Map) ||
                 !(settings.get(CHANNELS_KEY) instanceof Map) ||
-                !(settings.get(BRIDGES_KEY) instanceof ArrayList))
+                !(settings.get(BRIDGES_KEY) instanceof ArrayList) ||
+                !(settings.get(WEBSERVER_KEY) instanceof Map))
             return false;
 
         final Map<String, Object> channels = (Map<String, Object>) settings.get(CHANNELS_KEY);
         final Map<String, Object> bots = (Map<String, Object>) settings.get(BOTS_KEY);
         final ArrayList bridges = (ArrayList) settings.get(BRIDGES_KEY);
+        final Map<String, String> webserver = (Map<String, String>) settings.get(WEBSERVER_KEY);
 
         if (!isValidBots(bots))
             return false;
