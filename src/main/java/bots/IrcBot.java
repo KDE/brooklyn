@@ -11,6 +11,8 @@ import org.kitteh.irc.client.library.element.Channel;
 import org.kitteh.irc.client.library.event.channel.ChannelMessageEvent;
 import org.kitteh.irc.client.library.event.helper.ChannelUserListChangeEvent;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +22,7 @@ public final class IrcBot implements Bot {
     private static final String USERNAME_KEY = "username";
     private static final String HOST_KEY = "host";
     private final List<Triplet<Bot, String, String>> sendToList = new LinkedList<>();
+    private Map<String, String> webserverConfig;
     private Client client;
 
     @Override
@@ -41,6 +44,8 @@ public final class IrcBot implements Bot {
                 System.err.println(String.format("Invalid channel name '%s' on '%s'.", channel, configs.get(HOST_KEY)));
             }
         }
+
+        this.webserverConfig = webserverConfig;
 
         return true;
     }
@@ -103,7 +108,12 @@ public final class IrcBot implements Bot {
 
     @Override
     public void sendMessage(final BotImgMessage msg, final String channelTo) {
-        byte[] data = msg.getImg();
-
+        try {
+            final String fileUrl = Bot.storeFile(msg.getImg(), msg.getFileExtension(), webserverConfig);
+            client.sendMessage(channelTo, String.format("%s/%s/%s: %s",
+                    msg.getBotFrom().getClass().getSimpleName(), msg.getChannelFrom(), msg.getNicknameFrom(), fileUrl));
+        } catch (URISyntaxException | IOException e) {
+            System.err.println("Error while storing the img");
+        }
     }
 }

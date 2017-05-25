@@ -74,6 +74,7 @@ public class Config {
         return webserver;
     }
 
+    // TODO: create a isValidWebserverConfig
     private boolean isValid(final Map<String, Object> settings) {
         if (!settings.containsKey(BOTS_KEY) ||
                 !settings.containsKey(CHANNELS_KEY) ||

@@ -45,7 +45,7 @@ bridges:
     - ch2
 webserver:
   content-folder: "/var/www/html/"
-  base-url: "http://localhost/192.168.1.1/"
+  base-url: "http://localhost/"
 ```
 
 ### Webserver

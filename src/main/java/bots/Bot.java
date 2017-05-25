@@ -47,7 +47,8 @@ public interface Bot {
         }
 
         final byte[] hash = digest.digest(data);
-        final String encoded = Base64.getEncoder().encodeToString(hash);
+        final String encoded = Base64.getEncoder().encodeToString(hash)
+                .replace(File.separator, ""); // It prevents to create useless directories
 
         final String filename = encoded + '.' + fileExtension;
         final String contentFolder = webserverConfig.get("content-folder");
@@ -57,18 +58,18 @@ public interface Bot {
         final String folder = dateFormat.format(date);
 
         String baseLocalPath;
-        if (contentFolder.substring(contentFolder.length() - 1) == File.separator)
+        if (contentFolder.substring(contentFolder.length() - 1).equals(File.separator))
             baseLocalPath = contentFolder + folder;
         else
             baseLocalPath = contentFolder + File.separator + folder;
-        if (contentFolder.substring(contentFolder.length() - 1) != File.separator)
+        if (!contentFolder.substring(contentFolder.length() - 1).equals(File.separator))
             baseLocalPath += File.separator;
 
         // Create the directory if not exist
         final File directory = new File(baseLocalPath);
         directory.mkdirs();
 
-        final File file = new File(baseLocalPath + filename);
+        final File file = new File(baseLocalPath + File.separator + filename);
         if(!file.exists()) {
             FileOutputStream fos = null;
             try {
@@ -86,7 +87,7 @@ public interface Bot {
         }
 
         final URIBuilder builder = new URIBuilder(webserverConfig.get("base-url"));
-        builder.setPath(filename);
+        builder.setPath(dateFormat.format(date) + '/' + filename);
         return builder.toString();
     }
 
