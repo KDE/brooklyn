@@ -165,7 +165,7 @@ public class Config {
     }
 
     private boolean isValidWebserverConfig(final Map<String, String> webserver) {
-        if(webserver.containsKey(CONTENT_FOLDER_KEY) &&
+        if (webserver.containsKey(CONTENT_FOLDER_KEY) &&
                 webserver.containsKey(BASE_URL_KEY))
             return true;
 
