@@ -16,6 +16,8 @@ public class Config {
     private static final String CHANNELS_KEY = "channels";
     private static final String BRIDGES_KEY = "bridges";
     private static final String WEBSERVER_KEY = "webserver";
+    private static final String CONTENT_FOLDER_KEY = "content-folder";
+    private static final String BASE_URL_KEY = "base-url";
     private String fileName;
     private Map<String, Object> bots;
     private Map<String, Object> channels;
@@ -74,7 +76,6 @@ public class Config {
         return webserver;
     }
 
-    // TODO: create a isValidWebserverConfig
     private boolean isValid(final Map<String, Object> settings) {
         if (!settings.containsKey(BOTS_KEY) ||
                 !settings.containsKey(CHANNELS_KEY) ||
@@ -100,6 +101,9 @@ public class Config {
             return false;
 
         if (!isValidBridges(bridges, channels))
+            return false;
+
+        if (!isValidWebserverConfig(webserver))
             return false;
 
         return true;
@@ -158,5 +162,13 @@ public class Config {
         }
 
         return true;
+    }
+
+    private boolean isValidWebserverConfig(final Map<String, String> webserver) {
+        if(webserver.containsKey(CONTENT_FOLDER_KEY) &&
+                webserver.containsKey(BASE_URL_KEY))
+            return true;
+
+        return false;
     }
 }
