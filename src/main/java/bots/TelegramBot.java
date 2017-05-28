@@ -84,7 +84,12 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
 
                     final String text = msg.getText();
                     final BotTextMessage textMessage = new BotTextMessage(message, text);
-                    final BotImgMessage imgMessage = new BotImgMessage(textMessage, "jpg", output);
+
+                    final String imgName = img.getFilePath();
+                    final String[] imgNameSplitted = imgName.split("\\.");
+                    final String extension = imgNameSplitted[imgNameSplitted.length - 1];
+
+                    final BotImgMessage imgMessage = new BotImgMessage(textMessage, extension, output);
                     Bot.sendMessage(imgMessage, sendToList, chat.getId().toString());
 
                     inputStream.close();

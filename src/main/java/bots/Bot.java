@@ -70,7 +70,7 @@ public interface Bot {
         directory.mkdirs();
 
         final File file = new File(baseLocalPath + File.separator + filename);
-        if(!file.exists()) {
+        if (!file.exists()) {
             FileOutputStream fos = null;
             try {
                 fos = new FileOutputStream(file);
