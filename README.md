@@ -107,6 +107,7 @@ if dirSizeBytes > maxSizeBytes:
                 shutil.rmtree(fullDirPath)
 else:
     print("Nothing to clean, there is enough space.")
+
 ```
 
 ## License

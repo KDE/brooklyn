@@ -72,9 +72,7 @@ public final class IrcBot implements Bot {
         final BotMessage msg = new BotMessage(authorNickname, channelFrom, this);
         final BotTextMessage textMessage = new BotTextMessage(msg, text);
 
-        for (Triplet<Bot, String, String> sendTo : sendToList) {
-            sendTo.getValue0().sendMessage(textMessage, sendTo.getValue1());
-        }
+        Bot.sendMessage(textMessage, sendToList, channelFrom);
     }
 
     @Handler
@@ -102,6 +100,7 @@ public final class IrcBot implements Bot {
 
             final BotMessage msg = new BotMessage(authorNickname, channelFromName, this);
             final BotTextMessage textMessage = new BotTextMessage(msg, message);
+
             Bot.sendMessage(textMessage, sendToList, channelFromName);
         }
     }
