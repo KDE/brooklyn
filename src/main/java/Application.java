@@ -4,16 +4,12 @@ import bots.TelegramBot;
 import java.io.IOException;
 import java.util.*;
 
-public class Application {
+public final class Application {
     public static void main(String[] args) throws InterruptedException {
         // TODO: find a way to replace this temporary fix
         TelegramBot.init();
 
-        final Config conf;
-        if (args.length < 1)
-            conf = new Config(Config.DEFAULT_FILENAME);
-        else
-            conf = new Config(args[0]);
+        Config conf = new Config(1 > args.length ? Config.DEFAULT_FILENAME : args[0]);
 
         try {
             conf.load();
@@ -22,23 +18,24 @@ public class Application {
             System.exit(1);
         }
 
-        final Map<String, Object> channelsConfig = conf.getChannels();
-        final Map<String, String> webserverConfig = conf.getWebserverConfig();
+        Map<String, Object> channelsConfig = conf.getChannels();
+        Map<String, String> webserverConfig = conf.getWebserverConfig();
 
-        final Map<String, Bot> bots = initBots(conf.getBots(), channelsConfig, webserverConfig);
-        manageBridges(bots, channelsConfig, conf.getBridges());
+        Map<String, Bot> bots = Application.initBots(conf.getBots(), channelsConfig, webserverConfig);
+        Application.manageBridges(bots, channelsConfig, conf.getBridges());
 
-        handleShutdown();
+        Application.handleShutdown();
     }
 
-    private static Map<String, Bot> initBots(final Map<String, Object> botsConfig,
-                                             final Map<String, Object> channelsConfig,
-                                             final Map<String, String> webserverConfig) {
-        final Map<String, Bot> bots = new LinkedHashMap<String, Bot>();
+    private static Map<String, Bot> initBots(Map<String, Object> botsConfig,
+                                             Map<String, Object> channelsConfig,
+                                             Map<String, String> webserverConfig) {
+        int AVG_BOTS_N = 3;
+        Map<String, Bot> bots = new LinkedHashMap<>(AVG_BOTS_N);
         for (Map.Entry<String, Object> entry : botsConfig.entrySet()) {
             final Map<String, String> botConfig = (Map<String, String>) entry.getValue();
             try {
-                final Object newClass = Class.forName(Bot.class.getPackage().getName() + "." + botConfig.get(Config.BOT_TYPE_KEY)).newInstance();
+                final Object newClass = Class.forName(Bot.class.getPackage().getName() + '.' + botConfig.get(Config.BOT_TYPE_KEY)).newInstance();
                 if (newClass instanceof Bot) {
                     final Bot bot = (Bot) newClass;
                     final String[] channels = getChannelsName(entry.getKey(), channelsConfig);
@@ -49,8 +46,9 @@ public class Application {
                         System.err.println(String.format("Failed to init '%s' bot.", entry.getKey()));
                 } else
                     System.err.println(String.format("'%s' is not a valid bot.", botConfig.get(Config.BOT_TYPE_KEY)));
-            } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
+            } catch (final Exception e) {
                 System.err.println(String.format("Class of type '%s' can't be instantiated.", botConfig.get(Config.BOT_TYPE_KEY)));
+                e.printStackTrace();
             }
         }
 
@@ -59,8 +57,8 @@ public class Application {
 
     private static String[] getChannelsName(final String botName,
                                             final Map<String, Object> channelsConfig) {
-        final List<String> channels = new LinkedList<String>();
-        for (Map.Entry<String, Object> entry : channelsConfig.entrySet()) {
+        final List<String> channels = new LinkedList<>();
+        for (final Map.Entry<String, Object> entry : channelsConfig.entrySet()) {
             final Map<String, String> channelConfig = (Map<String, String>) entry.getValue();
             if (botName.equals(channelConfig.get(Config.BOT_KEY))) {
                 if (channelConfig.containsKey(Config.NAME_KEY))
@@ -73,19 +71,19 @@ public class Application {
     private static void manageBridges(final Map<String, Bot> bots,
                                       final Map<String, Object> channelsConfig,
                                       final ArrayList<ArrayList<String>> bridgesConfig) {
-        for (ArrayList<String> bridgeConfig : bridgesConfig) {
-            for (String fromChannelId : bridgeConfig) {
+        for (final Iterable<String> bridgeConfig : bridgesConfig) {
+            for (final String fromChannelId : bridgeConfig) {
                 final String fromBotId = channelToBotId(fromChannelId, channelsConfig);
                 if (fromBotId != null) {
                     final Bot fromBot = bots.get(fromBotId);
-                    for (String toChannelId : bridgeConfig) {
+                    for (final String toChannelId : bridgeConfig) {
                         final String toBotId = channelToBotId(toChannelId, channelsConfig);
-                        if (toBotId != null) {
+                        if (null != toBotId) {
                             final Bot toBot = bots.get(toBotId);
                             final Map<String, String> toChannelConfig = (Map<String, String>) channelsConfig.get(toChannelId);
                             final Map<String, String> fromChannelConfig = (Map<String, String>) channelsConfig.get(fromChannelId);
 
-                            if (fromChannelId != toChannelId)
+                            if (!fromChannelId.equals(toChannelId))
                                 fromBot.addBridge(toBot, toChannelConfig.get(Config.NAME_KEY), fromChannelConfig.get(Config.NAME_KEY));
                         }
                     }
@@ -96,9 +94,9 @@ public class Application {
 
     private static String channelToBotId(final String channelId,
                                          final Map<String, Object> channelsConfig) {
-        for (Map.Entry<String, Object> entry : channelsConfig.entrySet()) {
+        for (final Map.Entry<String, Object> entry : channelsConfig.entrySet()) {
             if (entry.getKey().equals(channelId)) {
-                final Map<String, String> channelConfig = (Map<String, String>) entry.getValue();
+                Map<String, String> channelConfig = (Map<String, String>) entry.getValue();
                 return channelConfig.get(Config.BOT_KEY);
             }
         }

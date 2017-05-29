@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class Config {
+class Config {
     public static final String DEFAULT_FILENAME = "/etc/brooklyn/conf.yml";
     public static final String BOT_TYPE_KEY = "type";
     public static final String NAME_KEY = "name";
@@ -18,29 +18,29 @@ public class Config {
     private static final String WEBSERVER_KEY = "webserver";
     private static final String CONTENT_FOLDER_KEY = "content-folder";
     private static final String BASE_URL_KEY = "base-url";
-    private String fileName;
+    private final String fileName;
     private Map<String, Object> bots;
     private Map<String, Object> channels;
     private ArrayList<ArrayList<String>> bridges;
     private Map<String, String> webserver;
 
-    public Config(final String configFileName) {
-        bots = new LinkedHashMap<String, Object>();
-        channels = new LinkedHashMap<String, Object>();
-        bridges = new ArrayList();
+    public Config(String configFileName) {
+        this.bots = new LinkedHashMap<String, Object>();
+        this.channels = new LinkedHashMap<String, Object>();
+        this.bridges = new ArrayList();
 
-        fileName = configFileName;
+        this.fileName = configFileName;
     }
 
     public void load() throws IOException {
-        final Yaml yaml = new Yaml();
+        Yaml yaml = new Yaml();
 
-        final InputStream file = new FileInputStream(fileName);
-        final Object settingsTmp = yaml.load(file);
+        InputStream file = new FileInputStream(this.fileName);
+        Object settingsTmp = yaml.load(file);
         if (!(settingsTmp instanceof Map))
             throw new IOException("File not formatted correctly");
 
-        final Map<String, Object> settings = (Map<String, Object>) settingsTmp;
+        Map<String, Object> settings = (Map<String, Object>) settingsTmp;
 
         if (file != null) {
             try {
@@ -54,10 +54,10 @@ public class Config {
         if (settings == null || !isValid(settings))
             throw new IOException("File not formatted correctly");
 
-        bots = (Map<String, Object>) settings.get(BOTS_KEY);
-        channels = (Map<String, Object>) settings.get(CHANNELS_KEY);
-        bridges = (ArrayList) settings.get(BRIDGES_KEY);
-        webserver = (Map<String, String>) settings.get(WEBSERVER_KEY);
+        this.bots = (Map<String, Object>) settings.get(BOTS_KEY);
+        this.channels = (Map<String, Object>) settings.get(CHANNELS_KEY);
+        this.bridges = (ArrayList) settings.get(BRIDGES_KEY);
+        this.webserver = (Map<String, String>) settings.get(WEBSERVER_KEY);
     }
 
     public Map<String, Object> getBots() {
@@ -76,7 +76,7 @@ public class Config {
         return webserver;
     }
 
-    private boolean isValid(final Map<String, Object> settings) {
+    private boolean isValid(Map<String, Object> settings) {
         if (!settings.containsKey(BOTS_KEY) ||
                 !settings.containsKey(CHANNELS_KEY) ||
                 !settings.containsKey(BRIDGES_KEY) ||
@@ -89,10 +89,10 @@ public class Config {
                 !(settings.get(WEBSERVER_KEY) instanceof Map))
             return false;
 
-        final Map<String, Object> channels = (Map<String, Object>) settings.get(CHANNELS_KEY);
-        final Map<String, Object> bots = (Map<String, Object>) settings.get(BOTS_KEY);
-        final ArrayList bridges = (ArrayList) settings.get(BRIDGES_KEY);
-        final Map<String, String> webserver = (Map<String, String>) settings.get(WEBSERVER_KEY);
+        Map<String, Object> channels = (Map<String, Object>) settings.get(CHANNELS_KEY);
+        Map<String, Object> bots = (Map<String, Object>) settings.get(BOTS_KEY);
+        ArrayList bridges = (ArrayList) settings.get(BRIDGES_KEY);
+        Map<String, String> webserver = (Map<String, String>) settings.get(WEBSERVER_KEY);
 
         if (!isValidBots(bots))
             return false;
@@ -103,13 +103,10 @@ public class Config {
         if (!isValidBridges(bridges, channels))
             return false;
 
-        if (!isValidWebserverConfig(webserver))
-            return false;
-
-        return true;
+        return isValidWebserverConfig(webserver);
     }
 
-    private boolean isValidBots(final Map<String, Object> bots) {
+    private boolean isValidBots(Map<String, Object> bots) {
         for (Object obj : bots.entrySet()) {
             if (!(obj instanceof Map.Entry))
                 return false;
@@ -119,7 +116,7 @@ public class Config {
                 return false;
 
             final Map<String, String> value = (Map<String, String>) bot.getValue();
-            if (!value.containsKey(BOT_TYPE_KEY))
+            if (!value.containsKey(Config.BOT_TYPE_KEY))
                 return false;
         }
 
@@ -127,7 +124,7 @@ public class Config {
     }
 
     private boolean isValidChannels(final Map<String, Object> channels, final Map<String, Object> bots) {
-        for (Object obj : channels.entrySet()) {
+        for (final Object obj : channels.entrySet()) {
             if (!(obj instanceof Map.Entry))
                 return false;
 
@@ -135,25 +132,25 @@ public class Config {
             if (!(channel.getValue() instanceof Map))
                 return false;
 
-            final Map<String, String> value = (Map<String, String>) channel.getValue();
-            if (!value.containsKey(BOT_KEY))
+            Map<String, String> value = (Map<String, String>) channel.getValue();
+            if (!value.containsKey(Config.BOT_KEY))
                 return false;
 
-            final String bot = value.get(BOT_KEY);
+            String bot = value.get(Config.BOT_KEY);
             if (!bots.containsKey(bot))
                 return false;
 
-            if (!value.containsKey(NAME_KEY))
+            if (!value.containsKey(Config.NAME_KEY))
                 return false;
         }
 
         return true;
     }
 
-    private boolean isValidBridges(final ArrayList bridges, final Map<String, Object> channels) {
+    private boolean isValidBridges(ArrayList bridges, Map<String, Object> channels) {
         for (Object obj : bridges) {
             if (!(obj instanceof ArrayList)) {
-                final ArrayList<String> bridge = (ArrayList<String>) obj;
+                ArrayList<String> bridge = (ArrayList<String>) obj;
                 for (String channel : bridge) {
                     if (!channels.containsKey(channel))
                         return false;
@@ -164,11 +161,9 @@ public class Config {
         return true;
     }
 
-    private boolean isValidWebserverConfig(final Map<String, String> webserver) {
-        if (webserver.containsKey(CONTENT_FOLDER_KEY) &&
-                webserver.containsKey(BASE_URL_KEY))
-            return true;
+    private boolean isValidWebserverConfig(Map<String, String> webserver) {
+        return webserver.containsKey(Config.CONTENT_FOLDER_KEY) &&
+                webserver.containsKey(Config.BASE_URL_KEY);
 
-        return false;
     }
 }

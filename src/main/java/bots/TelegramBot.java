@@ -30,7 +30,7 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
     private static final String USERNAME_KEY = "username";
     private static final String TOKEN_KEY = "token";
 
-    private static TelegramBotsApi telegramBotsApi = null;
+    private static TelegramBotsApi telegramBotsApi;
     private final List<Triplet<Bot, String, String>> sendToList = new LinkedList<>();
     private Map<String, String> configs;
 
@@ -47,8 +47,8 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
     }
 
     @Override
-    public boolean init(final Map<String, String> botConfigs, final String[] channels,
-                        final Map<String, String> webserverConfig) {
+    public boolean init(Map<String, String> botConfigs, String[] channels,
+                        Map<String, String> webserverConfig) {
         configs = botConfigs;
 
         try {
@@ -62,35 +62,35 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasMessage()) {
-            final Message msg = update.getMessage();
-            final Chat chat = msg.getChat();
-            final String channelFrom = chat.getTitle();
-            final String authorNickname = msg.getFrom().getUserName();
-            final BotMessage message = new BotMessage(authorNickname, channelFrom, this);
+            Message msg = update.getMessage();
+            Chat chat = msg.getChat();
+            String channelFrom = chat.getTitle();
+            String authorNickname = msg.getFrom().getUserName();
+            BotMessage message = new BotMessage(authorNickname, channelFrom, this);
 
-            final Message telegramMessage = update.getMessage();
+            Message telegramMessage = update.getMessage();
             // Send image
             if (telegramMessage.hasPhoto()) {
-                final List<PhotoSize> photos = telegramMessage.getPhoto();
+                List<PhotoSize> photos = telegramMessage.getPhoto();
 
                 PhotoSize photo = photos.get(photos.size() - 1);
-                final GetFile file = new GetFile();
+                GetFile file = new GetFile();
                 file.setFileId(photo.getFileId());
                 try {
-                    final File img = getFile(file);
-                    final URL imgUrl = new URL(img.getFileUrl(configs.get(TOKEN_KEY)));
-                    final HttpURLConnection httpConn = (HttpURLConnection) imgUrl.openConnection();
-                    final InputStream inputStream = httpConn.getInputStream();
-                    final byte[] output = IOUtils.toByteArray(inputStream);
+                    File img = getFile(file);
+                    URL imgUrl = new URL(img.getFileUrl(configs.get(TOKEN_KEY)));
+                    HttpURLConnection httpConn = (HttpURLConnection) imgUrl.openConnection();
+                    InputStream inputStream = httpConn.getInputStream();
+                    byte[] output = IOUtils.toByteArray(inputStream);
 
-                    final String text = msg.getText();
-                    final BotTextMessage textMessage = new BotTextMessage(message, text);
+                    String text = msg.getText();
+                    BotTextMessage textMessage = new BotTextMessage(message, text);
 
-                    final String imgName = img.getFilePath();
-                    final String[] imgNameSplitted = imgName.split("\\.");
-                    final String extension = imgNameSplitted[imgNameSplitted.length - 1];
+                    String imgName = img.getFilePath();
+                    String[] imgNameSplitted = imgName.split("\\.");
+                    String extension = imgNameSplitted[imgNameSplitted.length - 1];
 
-                    final BotImgMessage imgMessage = new BotImgMessage(textMessage, extension, output);
+                    BotImgMessage imgMessage = new BotImgMessage(textMessage, extension, output);
                     Bot.sendMessage(imgMessage, sendToList, chat.getId().toString());
 
                     inputStream.close();
@@ -102,14 +102,14 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
 
             // Send plain text
             else if (telegramMessage.hasText()) {
-                final String text = msg.getText();
-                final BotTextMessage textMessage = new BotTextMessage(message, text);
+                String text = msg.getText();
+                BotTextMessage textMessage = new BotTextMessage(message, text);
                 Bot.sendMessage(textMessage, sendToList, chat.getId().toString());
             }
             // Send sticker
             else if (telegramMessage.getSticker() != null) {
-                final Sticker sticker = telegramMessage.getSticker();
-                final BotTextMessage textMessage = new BotTextMessage(message, sticker.getEmoji());
+                Sticker sticker = telegramMessage.getSticker();
+                BotTextMessage textMessage = new BotTextMessage(message, sticker.getEmoji());
                 Bot.sendMessage(textMessage, sendToList, chat.getId().toString());
             }
         }
@@ -132,13 +132,13 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
     }
 
     @Override
-    public void addBridge(final Bot bot, final String channelTo, final String channelFrom) {
+    public void addBridge(Bot bot, String channelTo, String channelFrom) {
         sendToList.add(Triplet.with(bot, channelTo, channelFrom));
     }
 
     @Override
     public void sendMessage(BotTextMessage msg, String channelTo) {
-        final SendMessage message = new SendMessage()
+        SendMessage message = new SendMessage()
                 .setChatId(channelTo)
                 .setText(String.format("%s/%s/%s: %s",
                         msg.getBotFrom().getClass().getSimpleName(), msg.getChannelFrom(),
@@ -152,8 +152,8 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
     }
 
     @Override
-    public void sendMessage(final BotImgMessage msg, final String channelTo) {
-        final SendPhoto message = new SendPhoto()
+    public void sendMessage(BotImgMessage msg, String channelTo) {
+        SendPhoto message = new SendPhoto()
                 .setChatId(channelTo);
 
         if (msg.getText() != null)
@@ -165,7 +165,7 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
                     msg.getBotFrom().getClass().getSimpleName(), msg.getChannelFrom(),
                     msg.getNicknameFrom()));
 
-        final InputStream imageStream = new ByteArrayInputStream(msg.getImg());
+        InputStream imageStream = new ByteArrayInputStream(msg.getImg());
         message.setNewPhoto("img." + msg.getFileExtension(), imageStream);
 
         try {

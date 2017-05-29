@@ -14,12 +14,14 @@ import org.kitteh.irc.client.library.event.helper.ChannelUserListChangeEvent;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.*;
+import java.util.regex.Pattern;
 
 public final class IrcBot implements Bot {
     private static final String USERNAME_KEY = "username";
     private static final String HOST_KEY = "host";
+    private static final Pattern COMPILE = Pattern.compile("[\r\n]");
     private final List<Triplet<Bot, String, String>> sendToList = new LinkedList<>();
-    private final Set<String> usersParticipating = new LinkedHashSet<>();
+    private final Collection<String> usersParticipating = new LinkedHashSet<>();
     private Map<String, String> webserverConfig;
     private Client client;
 
@@ -40,6 +42,7 @@ public final class IrcBot implements Bot {
                 client.addChannel(channel);
             } catch (IllegalArgumentException e) {
                 System.err.println(String.format("Invalid channel name '%s' on '%s'.", channel, configs.get(HOST_KEY)));
+                e.printStackTrace();
             }
         }
 
@@ -55,7 +58,7 @@ public final class IrcBot implements Bot {
 
     @Override
     public void sendMessage(BotTextMessage msg, String channelTo) {
-        String[] messagesWithoutNewline = msg.getText().split("[\r\n]"); // IRC doesn't allow CR / LF
+        String[] messagesWithoutNewline = COMPILE.split(msg.getText()); // IRC doesn't allow CR / LF
         for (String messageToken : messagesWithoutNewline) {
             client.sendMessage(channelTo, String.format("%s/%s/%s: %s",
                     msg.getBotFrom().getClass().getSimpleName(), msg.getChannelFrom(), msg.getNicknameFrom(), messageToken));
@@ -89,7 +92,7 @@ public final class IrcBot implements Bot {
                 channelFromName = Bot.EVERY_CHANNEL;
 
             String message;
-            if (change.compareTo(ChannelUserListChangeEvent.Change.JOIN) == 0)
+            if (0 == change.compareTo(ChannelUserListChangeEvent.Change.JOIN))
                 message = String.format("%s joined the channel", authorNickname);
             else {
                 // Send a notification only if the user has sent at least one message
@@ -118,6 +121,7 @@ public final class IrcBot implements Bot {
                     msg.getBotFrom().getClass().getSimpleName(), msg.getChannelFrom(), msg.getNicknameFrom(), fileUrl));
         } catch (URISyntaxException | IOException e) {
             System.err.println("Error while storing the img");
+            e.printStackTrace();
         }
     }
 }
