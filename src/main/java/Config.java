@@ -25,11 +25,11 @@ class Config {
     private Map<String, String> webserver;
 
     public Config(String configFileName) {
-        this.bots = new LinkedHashMap<String, Object>();
-        this.channels = new LinkedHashMap<String, Object>();
-        this.bridges = new ArrayList();
+        bots = new LinkedHashMap<String, Object>();
+        channels = new LinkedHashMap<String, Object>();
+        bridges = new ArrayList();
 
-        this.fileName = configFileName;
+        fileName = configFileName;
     }
 
     public void load() throws IOException {
@@ -54,10 +54,10 @@ class Config {
         if (settings == null || !isValid(settings))
             throw new IOException("File not formatted correctly");
 
-        this.bots = (Map<String, Object>) settings.get(BOTS_KEY);
-        this.channels = (Map<String, Object>) settings.get(CHANNELS_KEY);
-        this.bridges = (ArrayList) settings.get(BRIDGES_KEY);
-        this.webserver = (Map<String, String>) settings.get(WEBSERVER_KEY);
+        bots = (Map<String, Object>) settings.get(BOTS_KEY);
+        channels = (Map<String, Object>) settings.get(CHANNELS_KEY);
+        bridges = (ArrayList) settings.get(BRIDGES_KEY);
+        webserver = (Map<String, String>) settings.get(WEBSERVER_KEY);
     }
 
     public Map<String, Object> getBots() {
@@ -111,36 +111,36 @@ class Config {
             if (!(obj instanceof Map.Entry))
                 return false;
 
-            final Map.Entry<String, Object> bot = (Map.Entry<String, Object>) obj;
+            Map.Entry<String, Object> bot = (Map.Entry<String, Object>) obj;
             if (!(bot.getValue() instanceof Map))
                 return false;
 
-            final Map<String, String> value = (Map<String, String>) bot.getValue();
-            if (!value.containsKey(Config.BOT_TYPE_KEY))
+            Map<String, String> value = (Map<String, String>) bot.getValue();
+            if (!value.containsKey(BOT_TYPE_KEY))
                 return false;
         }
 
         return true;
     }
 
-    private boolean isValidChannels(final Map<String, Object> channels, final Map<String, Object> bots) {
-        for (final Object obj : channels.entrySet()) {
+    private boolean isValidChannels(Map<String, Object> channels, Map<String, Object> bots) {
+        for (Object obj : channels.entrySet()) {
             if (!(obj instanceof Map.Entry))
                 return false;
 
-            final Map.Entry<String, Object> channel = (Map.Entry<String, Object>) obj;
+            Map.Entry<String, Object> channel = (Map.Entry<String, Object>) obj;
             if (!(channel.getValue() instanceof Map))
                 return false;
 
             Map<String, String> value = (Map<String, String>) channel.getValue();
-            if (!value.containsKey(Config.BOT_KEY))
+            if (!value.containsKey(BOT_KEY))
                 return false;
 
-            String bot = value.get(Config.BOT_KEY);
+            String bot = value.get(BOT_KEY);
             if (!bots.containsKey(bot))
                 return false;
 
-            if (!value.containsKey(Config.NAME_KEY))
+            if (!value.containsKey(NAME_KEY))
                 return false;
         }
 
@@ -162,8 +162,8 @@ class Config {
     }
 
     private boolean isValidWebserverConfig(Map<String, String> webserver) {
-        return webserver.containsKey(Config.CONTENT_FOLDER_KEY) &&
-                webserver.containsKey(Config.BASE_URL_KEY);
+        return webserver.containsKey(CONTENT_FOLDER_KEY) &&
+                webserver.containsKey(BASE_URL_KEY);
 
     }
 }
