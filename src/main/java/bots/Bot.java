@@ -26,7 +26,7 @@ public interface Bot {
     static void sendMessage(BotMessage message, List<Triplet<Bot, String, String>> sendToList,
                             String channelFrom) {
         for (Triplet<Bot, String, String> sendTo : sendToList) {
-            if (sendTo.getValue2().equals(channelFrom)) {
+            if (sendTo.getValue2().equals(channelFrom) || channelFrom.equals(EVERY_CHANNEL)) {
                 if (message instanceof BotImgMessage)
                     sendTo.getValue0().sendMessage((BotImgMessage) message, sendTo.getValue1());
                 else if (message instanceof BotTextMessage)
