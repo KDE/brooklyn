@@ -52,6 +52,9 @@ webserver:
 
 You need also a webserver (e.g. nginx) to support attachments in protocols like IRC.
 
+Don't forget to add read and write permissions for the content-folder.
+Otherwise the app won't work.
+
 ## License
 
 This software is released under the GNU AGPL license.
