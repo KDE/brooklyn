@@ -13,21 +13,19 @@ import org.kitteh.irc.client.library.event.helper.ChannelUserListChangeEvent;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public final class IrcBot implements Bot {
     private static final String USERNAME_KEY = "username";
     private static final String HOST_KEY = "host";
     private final List<Triplet<Bot, String, String>> sendToList = new LinkedList<>();
+    private final Set<String> usersParticipating = new LinkedHashSet<>();
     private Map<String, String> webserverConfig;
     private Client client;
 
     @Override
-    public boolean init(final Map<String, String> configs, final String[] channels,
-                        final Map<String, String> webserverConfig) {
+    public boolean init(Map<String, String> configs, String[] channels,
+                        Map<String, String> webserverConfig) {
         if (!configs.containsKey(USERNAME_KEY))
             return false;
         if (!configs.containsKey(HOST_KEY))
@@ -51,7 +49,7 @@ public final class IrcBot implements Bot {
     }
 
     @Override
-    public void addBridge(final Bot bot, final String channelTo, final String channelFrom) {
+    public void addBridge(Bot bot, String channelTo, String channelFrom) {
         sendToList.add(Triplet.with(bot, channelTo, channelFrom));
     }
 
@@ -65,50 +63,57 @@ public final class IrcBot implements Bot {
     }
 
     @Handler(delivery = Invoke.Asynchronously)
-    private void onMessageReceived(final ChannelMessageEvent message) {
-        final String channelFrom = message.getChannel().getName();
-        final String authorNickname = message.getActor().getNick();
-        final String text = message.getMessage();
-        final BotMessage msg = new BotMessage(authorNickname, channelFrom, this);
-        final BotTextMessage textMessage = new BotTextMessage(msg, text);
+    private void onMessageReceived(ChannelMessageEvent message) {
+        String authorNickname = message.getActor().getNick();
+        usersParticipating.add(authorNickname);
+
+        String channelFrom = message.getChannel().getName();
+        String text = message.getMessage();
+        BotMessage msg = new BotMessage(authorNickname, channelFrom, this);
+        BotTextMessage textMessage = new BotTextMessage(msg, text);
 
         Bot.sendMessage(textMessage, sendToList, channelFrom);
     }
 
     @Handler
-    public void onJoin(final ChannelUserListChangeEvent event) {
-        final String authorNickname = event.getUser().getNick();
+    public void onJoin(ChannelUserListChangeEvent event) {
+        String authorNickname = event.getUser().getNick();
         if (!authorNickname.equals(client.getNick())) {
-            final Optional<Channel> channelFrom = event.getAffectedChannel();
-            final ChannelUserListChangeEvent.Change change = event.getChange();
+            Optional<Channel> channelFrom = event.getAffectedChannel();
+            ChannelUserListChangeEvent.Change change = event.getChange();
 
-            final String channelFromName;
+            String channelFromName;
             if (channelFrom.isPresent())
                 channelFromName = channelFrom.get().getName();
             else
-                channelFromName = EVERY_CHANNEL;
+                channelFromName = Bot.EVERY_CHANNEL;
 
-            final String message;
+            String message;
             if (change.compareTo(ChannelUserListChangeEvent.Change.JOIN) == 0)
                 message = String.format("%s joined the channel", authorNickname);
             else {
+                // Send a notification only if the user has sent at least one message
+                if (!usersParticipating.contains(authorNickname))
+                    return;
+
+                usersParticipating.remove(authorNickname);
                 if (channelFrom.isPresent())
                     message = String.format("%s leaved the channel", authorNickname);
                 else
                     message = String.format("%s leaved", authorNickname);
             }
 
-            final BotMessage msg = new BotMessage(authorNickname, channelFromName, this);
-            final BotTextMessage textMessage = new BotTextMessage(msg, message);
+            BotMessage msg = new BotMessage(authorNickname, channelFromName, this);
+            BotTextMessage textMessage = new BotTextMessage(msg, message);
 
             Bot.sendMessage(textMessage, sendToList, channelFromName);
         }
     }
 
     @Override
-    public void sendMessage(final BotImgMessage msg, final String channelTo) {
+    public void sendMessage(BotImgMessage msg, String channelTo) {
         try {
-            final String fileUrl = Bot.storeFile(msg.getImg(), msg.getFileExtension(), webserverConfig);
+            String fileUrl = Bot.storeFile(msg.getImg(), msg.getFileExtension(), webserverConfig);
             client.sendMessage(channelTo, String.format("%s/%s/%s: %s",
                     msg.getBotFrom().getClass().getSimpleName(), msg.getChannelFrom(), msg.getNicknameFrom(), fileUrl));
         } catch (URISyntaxException | IOException e) {
