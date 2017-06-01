@@ -132,11 +132,13 @@ public final class IrcBot implements Bot {
     public String[] getUsers(final String channel) {
         final Channel ircChannel = client.getChannel(channel).get();
         final List<User> listOfUsers = ircChannel.getUsers();
-        final String[] output = new String[listOfUsers.size()];
-        for(int i = 0; i < output.length; i++) {
-            output[i] = listOfUsers.get(i).getNick();
+        final List<String> output = new ArrayList<>(listOfUsers.size());
+        for(User user: listOfUsers) {
+            final String nick = user.getNick();
+            if(!nick.equals(client.getNick()))
+                output.add(nick);
         }
 
-        return output;
+        return output.toArray(new String[output.size()]);
     }
 }
