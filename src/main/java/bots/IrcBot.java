@@ -8,9 +8,12 @@ import net.engio.mbassy.listener.Invoke;
 import org.javatuples.Triplet;
 import org.kitteh.irc.client.library.Client;
 import org.kitteh.irc.client.library.element.Channel;
+import org.kitteh.irc.client.library.element.User;
 import org.kitteh.irc.client.library.event.channel.ChannelMessageEvent;
 import org.kitteh.irc.client.library.event.helper.ChannelUserListChangeEvent;
+import org.telegram.telegrambots.api.objects.Chat;
 
+import javax.swing.text.html.Option;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.*;
@@ -123,5 +126,17 @@ public final class IrcBot implements Bot {
             System.err.println("Error while storing the img");
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public String[] getUsers(final String channel) {
+        final Channel ircChannel = client.getChannel(channel).get();
+        final List<User> listOfUsers = ircChannel.getUsers();
+        final String[] output = new String[listOfUsers.size()];
+        for(int i = 0; i < output.length; i++) {
+            output[i] = listOfUsers.get(i).getNick();
+        }
+
+        return output;
     }
 }

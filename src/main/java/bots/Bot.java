@@ -15,10 +15,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Base64;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public interface Bot {
     String EVERY_CHANNEL = "*";
@@ -91,6 +88,20 @@ public interface Bot {
         return builder.toString();
     }
 
+    static List<Triplet<Bot, String, String[]>> askForUsers(
+            final String channelFrom,
+            final List<Triplet<Bot, String, String>> askToList) {
+        final List<Triplet<Bot, String, String[]>> allUsers = new ArrayList<>(askToList.size());
+        for (final Triplet<Bot, String, String> askTo : askToList) {
+            if(askTo.getValue2().equals(channelFrom)) {
+                final String[] users = askTo.getValue0().getUsers(askTo.getValue1());
+                allUsers.add(new Triplet(askTo.getValue0(), askTo.getValue1(), users));
+            }
+        }
+
+        return allUsers;
+    }
+
     boolean init(final Map<String, String> configs, final String[] channels,
                  Map<String, String> webserverConfig);
 
@@ -99,4 +110,6 @@ public interface Bot {
     void sendMessage(final BotTextMessage msg, final String channelTo);
 
     void sendMessage(final BotImgMessage msg, final String channelTo);
+
+    String[] getUsers(final String channel);
 }

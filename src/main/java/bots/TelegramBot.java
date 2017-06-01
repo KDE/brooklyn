@@ -103,8 +103,37 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
             // Send plain text
             else if (telegramMessage.hasText()) {
                 String text = msg.getText();
-                BotTextMessage textMessage = new BotTextMessage(message, text);
-                Bot.sendMessage(textMessage, sendToList, chat.getId().toString());
+
+                final String[] commandSplitted = text.split("\\\\s+");
+                if(text.startsWith("/users")) {
+                    final List<Triplet<Bot, String, String[]>> users = Bot.askForUsers(chat.getId().toString(), sendToList);
+                    final StringBuilder output = new StringBuilder();
+                    for(final Triplet<Bot, String, String[]> channel: users) {
+                        output.append(channel.getValue0().getClass().getSimpleName())
+                                .append("/")
+                                .append(channel.getValue1())
+                                .append(":\n");
+
+                        for (final String user : channel.getValue2()) {
+                            output.append(user).append('\n');
+                        }
+
+                        output.append('\n');
+                    }
+
+                    final SendMessage messageToSend = new SendMessage()
+                            .setChatId(chat.getId())
+                            .setText(output.toString());
+                    try {
+                        sendMessage(messageToSend);
+                    } catch (TelegramApiException e) {
+                        System.err.println("Failed to send message from TelegramBot");
+                        e.printStackTrace();
+                    }
+                } else {
+                    BotTextMessage textMessage = new BotTextMessage(message, text);
+                    Bot.sendMessage(textMessage, sendToList, chat.getId().toString());
+                }
             }
             // Send sticker
             else if (telegramMessage.getSticker() != null) {
@@ -174,5 +203,10 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
             System.err.println(String.format("Failed to send message from %s to TelegramBot", msg.getBotFrom().getClass().getSimpleName()));
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public String[] getUsers(final String channel) {
+        return new String[0];
     }
 }
