@@ -1,7 +1,6 @@
 package bots;
 
 import bots.messages.BotDocumentMessage;
-import bots.messages.BotImgMessage;
 import bots.messages.BotMessage;
 import bots.messages.BotTextMessage;
 import org.apache.http.client.utils.URIBuilder;
@@ -24,10 +23,8 @@ public interface Bot {
     static void sendMessage(BotMessage message, List<Triplet<Bot, String, String>> sendToList,
                             String channelFrom) {
         for (Triplet<Bot, String, String> sendTo : sendToList) {
-            if (sendTo.getValue2().equals(channelFrom) || channelFrom.equals(Bot.EVERY_CHANNEL)) {
-                if (message instanceof BotImgMessage)
-                    sendTo.getValue0().sendMessage((BotImgMessage) message, sendTo.getValue1());
-                else if (message instanceof BotDocumentMessage)
+            if (sendTo.getValue2().equals(channelFrom) || channelFrom.equals(EVERY_CHANNEL)) {
+                if (message instanceof BotDocumentMessage)
                     sendTo.getValue0().sendMessage((BotDocumentMessage) message, sendTo.getValue1());
                 else if (message instanceof BotTextMessage)
                     sendTo.getValue0().sendMessage((BotTextMessage) message, sendTo.getValue1());
@@ -111,8 +108,6 @@ public interface Bot {
     void addBridge(Bot bot, String channelTo, String channelFrom);
 
     void sendMessage(BotTextMessage msg, String channelTo);
-
-    void sendMessage(BotImgMessage msg, String channelTo);
 
     void sendMessage(BotDocumentMessage msg, String channelTo);
 
