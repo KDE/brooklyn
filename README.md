@@ -31,6 +31,7 @@ bots:
  ibot:
     type: IrcBot
     username: "skynet"
+    password: "123456" # Optional
     host: "url.of.the.host.com"
 channels:
   ch1:
