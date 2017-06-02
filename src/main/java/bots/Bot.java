@@ -19,11 +19,12 @@ import java.util.*;
 
 public interface Bot {
     String EVERY_CHANNEL = "*";
+    String LOCATION_TO_URL = "https://www.openstreetmap.org/?mlat=%s&&mlon=%s";
 
     static void sendMessage(BotMessage message, List<Triplet<Bot, String, String>> sendToList,
                             String channelFrom) {
         for (Triplet<Bot, String, String> sendTo : sendToList) {
-            if (sendTo.getValue2().equals(channelFrom) || channelFrom.equals(EVERY_CHANNEL)) {
+            if (sendTo.getValue2().equals(channelFrom) || channelFrom.equals(Bot.EVERY_CHANNEL)) {
                 if (message instanceof BotDocumentMessage)
                     sendTo.getValue0().sendMessage((BotDocumentMessage) message, sendTo.getValue1());
                 else if (message instanceof BotTextMessage)
