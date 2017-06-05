@@ -8,9 +8,10 @@ import models.MessageBuilder;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.Map.Entry;
 
 public final class Application {
+    private static MongoDatabase database;
+
     public static void main(String[] args) throws InterruptedException {
         // TODO: find a way to replace this temporary fix
         TelegramBot.init();
@@ -29,16 +30,16 @@ public final class Application {
         // Init mongodb
         MongoClientURI connectionString = new MongoClientURI(conf.getMongoUri());
         MongoClient mongoClient = new MongoClient(connectionString);
-        MongoDatabase database = mongoClient.getDatabase("brooklyn");
-        MessageBuilder.init(database);
+        Application.database = mongoClient.getDatabase("brooklyn");
+        MessageBuilder.init(Application.database);
 
         Map<String, String> webserverConfig = conf.getWebserverConfig();
         FileStorage.init(webserverConfig);
 
-        Map<String, Bot> bots = initBots(conf.getBots(), channelsConfig, webserverConfig);
-        manageBridges(bots, channelsConfig, conf.getBridges());
+        Map<String, Bot> bots = Application.initBots(conf.getBots(), channelsConfig, webserverConfig);
+        Application.manageBridges(bots, channelsConfig, conf.getBridges());
 
-        handleShutdown();
+        Application.handleShutdown();
     }
 
     private static Map<String, Bot> initBots(Map<String, Object> botsConfig,
@@ -46,7 +47,7 @@ public final class Application {
                                              Map<String, String> webserverConfig) {
         int AVG_BOTS_N = 3;
         Map<String, Bot> bots = new LinkedHashMap<>(AVG_BOTS_N);
-        for (Entry<String, Object> entry : botsConfig.entrySet()) {
+        for (Map.Entry<String, Object> entry : botsConfig.entrySet()) {
             Map<String, String> botConfig = (Map<String, String>) entry.getValue();
             try {
                 Object newClass = Class.forName(Bot.class.getPackage().getName() + '.' + botConfig.get(Config.BOT_TYPE_KEY)).newInstance();
@@ -72,7 +73,7 @@ public final class Application {
     private static String[] getChannelsName(String botName,
                                             Map<String, Object> channelsConfig) {
         List<String> channels = new LinkedList<>();
-        for (Entry<String, Object> entry : channelsConfig.entrySet()) {
+        for (Map.Entry<String, Object> entry : channelsConfig.entrySet()) {
             Map<String, String> channelConfig = (Map<String, String>) entry.getValue();
             if (botName.equals(channelConfig.get(Config.BOT_KEY))) {
                 if (channelConfig.containsKey(Config.NAME_KEY))
@@ -108,7 +109,7 @@ public final class Application {
 
     private static String channelToBotId(String channelId,
                                          Map<String, Object> channelsConfig) {
-        for (Entry<String, Object> entry : channelsConfig.entrySet()) {
+        for (Map.Entry<String, Object> entry : channelsConfig.entrySet()) {
             if (entry.getKey().equals(channelId)) {
                 Map<String, String> channelConfig = (Map<String, String>) entry.getValue();
                 return channelConfig.get(Config.BOT_KEY);
@@ -120,6 +121,7 @@ public final class Application {
 
     private static void handleShutdown() throws InterruptedException {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            Application.database.drop();
             System.out.println("Application terminated");
         }));
 
