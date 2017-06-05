@@ -47,6 +47,7 @@ bridges:
 webserver:
   content-folder: "/var/www/html/"
   base-url: "http://localhost/"
+mongo-conn-uri: "mongodb://localhost:27017"
 
 ```
 

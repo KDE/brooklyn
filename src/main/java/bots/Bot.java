@@ -3,6 +3,7 @@ package bots;
 import messages.BotDocumentMessage;
 import messages.BotMessage;
 import messages.BotTextMessage;
+import models.MessageBuilder;
 import org.apache.http.client.utils.URIBuilder;
 import org.javatuples.Triplet;
 
@@ -19,22 +20,37 @@ import java.util.*;
 
 public interface Bot {
     String EVERY_CHANNEL = "*";
+
+    // TODO: this string should be encapsulated in an external class
     String LOCATION_TO_URL = "https://www.openstreetmap.org/?mlat=%s&&mlon=%s";
 
     static void sendMessage(BotMessage message, List<Triplet<Bot, String, String>> sendToList,
-                            String channelFrom) {
+                            String channelFrom, MessageBuilder builder) {
         for (Triplet<Bot, String, String> sendTo : sendToList) {
-            if (sendTo.getValue2().equals(channelFrom) || channelFrom.equals(EVERY_CHANNEL)) {
-                if (message instanceof BotDocumentMessage)
-                    sendTo.getValue0().sendMessage((BotDocumentMessage) message, sendTo.getValue1());
-                else if (message instanceof BotTextMessage)
-                    sendTo.getValue0().sendMessage((BotTextMessage) message, sendTo.getValue1());
-                else
+            if (sendTo.getValue2().equals(channelFrom) || channelFrom.equals(Bot.EVERY_CHANNEL)) {
+                String msgId;
+                if (message instanceof BotDocumentMessage) {
+                    msgId = sendTo.getValue0().sendMessage(
+                            (BotDocumentMessage) message, sendTo.getValue1());
+                } else if (message instanceof BotTextMessage) {
+                    msgId = sendTo.getValue0().sendMessage(
+                            (BotTextMessage) message, sendTo.getValue1());
+                } else {
                     System.err.println("Type of message not valid");
+                    msgId = null;
+                }
+
+                if (null != msgId) {
+                    builder.append(Integer.toString(sendTo.getValue0().hashCode()),
+                            msgId, sendTo.getValue1());
+                }
             }
         }
+
+        builder.saveHistory();
     }
 
+    // TODO: move "storeFile()" in an external class
     static String storeFile(byte[] data, String fileExtension,
                             Map<String, String> webserverConfig) throws URISyntaxException, IOException {
         MessageDigest digest = null;
@@ -108,9 +124,9 @@ public interface Bot {
 
     void addBridge(Bot bot, String channelTo, String channelFrom);
 
-    void sendMessage(BotTextMessage msg, String channelTo);
+    String sendMessage(BotTextMessage msg, String channelTo);
 
-    void sendMessage(BotDocumentMessage msg, String channelTo);
+    String sendMessage(BotDocumentMessage msg, String channelTo);
 
     String[] getUsers(String channel);
 }
