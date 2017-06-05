@@ -12,14 +12,12 @@ import java.util.Map;
 
 public interface Bot {
     String EVERY_CHANNEL = "*";
-
-    // TODO: this string should be encapsulated in an external class
     String LOCATION_TO_URL = "https://www.openstreetmap.org/?mlat=%s&&mlon=%s";
 
     static void sendMessage(BotMessage message, List<Triplet<Bot, String, String>> sendToList,
                             String channelFrom, MessageBuilder builder) {
         for (Triplet<Bot, String, String> sendTo : sendToList) {
-            if (sendTo.getValue2().equals(channelFrom) || channelFrom.equals(EVERY_CHANNEL)) {
+            if (sendTo.getValue2().equals(channelFrom) || channelFrom.equals(Bot.EVERY_CHANNEL)) {
                 String msgId;
                 if (message instanceof BotDocumentMessage) {
                     msgId = sendTo.getValue0().sendMessage(
@@ -63,6 +61,8 @@ public interface Bot {
     String sendMessage(BotTextMessage msg, String channelTo);
 
     String sendMessage(BotDocumentMessage msg, String channelTo);
+
+    void deleteMessage(String messageId, String channelId);
 
     String[] getUsers(String channel);
 }
