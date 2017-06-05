@@ -15,9 +15,6 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.Map;
 
-/**
- * Created by davide on 05/06/17.
- */
 public class FileStorage {
     private static Map<String, String> webserverConfig;
 
@@ -38,7 +35,7 @@ public class FileStorage {
                 .replace(File.separator, ""); // It prevents to create useless directories
 
         String filename = encoded + '.' + fileExtension;
-        String contentFolder = FileStorage.webserverConfig.get("content-folder");
+        String contentFolder = webserverConfig.get("content-folder");
 
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
         Date date = new Date();
@@ -73,7 +70,7 @@ public class FileStorage {
             }
         }
 
-        URIBuilder builder = new URIBuilder(FileStorage.webserverConfig.get("base-url"));
+        URIBuilder builder = new URIBuilder(webserverConfig.get("base-url"));
         builder.setPath(dateFormat.format(date) + '/' + filename);
         return builder.toString();
     }

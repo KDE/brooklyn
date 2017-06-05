@@ -7,17 +7,14 @@ import org.bson.Document;
 import java.util.LinkedList;
 import java.util.List;
 
-/**
- * Created by davide on 05/06/17.
- */
 public class MessageBuilder {
     private static MongoCollection<Document> messages;
     private final Document messageBundle = new Document();
     private final List<Document> history = new LinkedList<>();
 
     public static void init(MongoDatabase db) {
-        if (messages == null)
-            messages = db.getCollection("messages");
+        if (MessageBuilder.messages == null)
+            MessageBuilder.messages = db.getCollection("messages");
     }
 
     public void append(String botId, String messageId, String channelId) {
@@ -25,12 +22,12 @@ public class MessageBuilder {
                 .append("channel", channelId)
                 .append("message", messageId);
 
-        this.history.add(message);
+        history.add(message);
     }
 
     public void saveHistory() {
         // Append array to messageBundle
-        this.messageBundle.append("history", this.history);
-        messages.insertOne(this.messageBundle);
+        messageBundle.append("history", history);
+        MessageBuilder.messages.insertOne(messageBundle);
     }
 }
