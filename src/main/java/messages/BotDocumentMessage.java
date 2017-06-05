@@ -1,4 +1,4 @@
-package bots.messages;
+package messages;
 
 public class BotDocumentMessage extends BotTextMessage {
     private final byte[] doc;
@@ -11,10 +11,10 @@ public class BotDocumentMessage extends BotTextMessage {
     }
 
     public String getFileExtension() {
-        return this.fileExtension;
+        return fileExtension;
     }
 
     public byte[] getDoc() {
-        return this.doc;
+        return doc;
     }
 }

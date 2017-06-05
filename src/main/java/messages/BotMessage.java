@@ -1,4 +1,4 @@
-package bots.messages;
+package messages;
 
 import bots.Bot;
 
@@ -7,21 +7,21 @@ public class BotMessage {
     private final String channelFrom;
     private final Bot botFrom;
 
-    public BotMessage(final String nicknameFrom, final String channelFrom, final Bot botFrom) {
+    public BotMessage(String nicknameFrom, String channelFrom, Bot botFrom) {
         this.nicknameFrom = nicknameFrom;
         this.channelFrom = channelFrom;
         this.botFrom = botFrom;
     }
 
     public String getNicknameFrom() {
-        return nicknameFrom;
+        return this.nicknameFrom;
     }
 
     public String getChannelFrom() {
-        return channelFrom;
+        return this.channelFrom;
     }
 
     public Bot getBotFrom() {
-        return botFrom;
+        return this.botFrom;
     }
 }
