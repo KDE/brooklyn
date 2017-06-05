@@ -3,10 +3,12 @@ import bots.TelegramBot;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.client.MongoDatabase;
+import models.FileStorage;
 import models.MessageBuilder;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.Map.Entry;
 
 public final class Application {
     public static void main(String[] args) throws InterruptedException {
@@ -23,7 +25,6 @@ public final class Application {
         }
 
         Map<String, Object> channelsConfig = conf.getChannels();
-        Map<String, String> webserverConfig = conf.getWebserverConfig();
 
         // Init mongodb
         MongoClientURI connectionString = new MongoClientURI(conf.getMongoUri());
@@ -31,10 +32,13 @@ public final class Application {
         MongoDatabase database = mongoClient.getDatabase("brooklyn");
         MessageBuilder.init(database);
 
-        Map<String, Bot> bots = Application.initBots(conf.getBots(), channelsConfig, webserverConfig);
-        Application.manageBridges(bots, channelsConfig, conf.getBridges());
+        Map<String, String> webserverConfig = conf.getWebserverConfig();
+        FileStorage.init(webserverConfig);
 
-        Application.handleShutdown();
+        Map<String, Bot> bots = initBots(conf.getBots(), channelsConfig, webserverConfig);
+        manageBridges(bots, channelsConfig, conf.getBridges());
+
+        handleShutdown();
     }
 
     private static Map<String, Bot> initBots(Map<String, Object> botsConfig,
@@ -42,14 +46,14 @@ public final class Application {
                                              Map<String, String> webserverConfig) {
         int AVG_BOTS_N = 3;
         Map<String, Bot> bots = new LinkedHashMap<>(AVG_BOTS_N);
-        for (Map.Entry<String, Object> entry : botsConfig.entrySet()) {
+        for (Entry<String, Object> entry : botsConfig.entrySet()) {
             Map<String, String> botConfig = (Map<String, String>) entry.getValue();
             try {
                 Object newClass = Class.forName(Bot.class.getPackage().getName() + '.' + botConfig.get(Config.BOT_TYPE_KEY)).newInstance();
                 if (newClass instanceof Bot) {
                     Bot bot = (Bot) newClass;
-                    String[] channels = Application.getChannelsName(entry.getKey(), channelsConfig);
-                    if (bot.init(botConfig, channels, webserverConfig)) {
+                    String[] channels = getChannelsName(entry.getKey(), channelsConfig);
+                    if (bot.init(botConfig, channels)) {
                         bots.put(entry.getKey(), bot);
                         System.out.println(String.format("Bot '%s' initialized.", entry.getKey()));
                     } else
@@ -68,7 +72,7 @@ public final class Application {
     private static String[] getChannelsName(String botName,
                                             Map<String, Object> channelsConfig) {
         List<String> channels = new LinkedList<>();
-        for (Map.Entry<String, Object> entry : channelsConfig.entrySet()) {
+        for (Entry<String, Object> entry : channelsConfig.entrySet()) {
             Map<String, String> channelConfig = (Map<String, String>) entry.getValue();
             if (botName.equals(channelConfig.get(Config.BOT_KEY))) {
                 if (channelConfig.containsKey(Config.NAME_KEY))
@@ -83,11 +87,11 @@ public final class Application {
                                       ArrayList<ArrayList<String>> bridgesConfig) {
         for (Iterable<String> bridgeConfig : bridgesConfig) {
             for (String fromChannelId : bridgeConfig) {
-                String fromBotId = Application.channelToBotId(fromChannelId, channelsConfig);
+                String fromBotId = channelToBotId(fromChannelId, channelsConfig);
                 if (fromBotId != null) {
                     Bot fromBot = bots.get(fromBotId);
                     for (String toChannelId : bridgeConfig) {
-                        String toBotId = Application.channelToBotId(toChannelId, channelsConfig);
+                        String toBotId = channelToBotId(toChannelId, channelsConfig);
                         if (null != toBotId) {
                             Bot toBot = bots.get(toBotId);
                             Map<String, String> toChannelConfig = (Map<String, String>) channelsConfig.get(toChannelId);
@@ -104,7 +108,7 @@ public final class Application {
 
     private static String channelToBotId(String channelId,
                                          Map<String, Object> channelsConfig) {
-        for (Map.Entry<String, Object> entry : channelsConfig.entrySet()) {
+        for (Entry<String, Object> entry : channelsConfig.entrySet()) {
             if (entry.getKey().equals(channelId)) {
                 Map<String, String> channelConfig = (Map<String, String>) entry.getValue();
                 return channelConfig.get(Config.BOT_KEY);
