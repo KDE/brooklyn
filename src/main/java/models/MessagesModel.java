@@ -15,7 +15,8 @@ public class MessagesModel {
                 + "	id integer PRIMARY KEY AUTOINCREMENT,\n"
                 + "	bot varchar(255) NOT NULL,\n"
                 + "	channel varchar(255) NOT NULL,\n"
-                + "	message varchar(255) NOT NULL\n"
+                + "	message varchar(255) NOT NULL,\n"
+                + " CONSTRAINT UC_message UNIQUE (bot,channel,message)"
                 + ");";
 
         String bridgeTableSql = "CREATE TABLE IF NOT EXISTS bridge (\n"
@@ -33,11 +34,15 @@ public class MessagesModel {
         String deleteBridge = "DROP TABLE bridge;";
         String deleteMessages = "DROP TABLE messages;";
         try {
-            Statement createTables = database.createStatement();
+            Statement createTables = MessagesModel.database.createStatement();
             createTables.execute(deleteBridge);
             createTables.execute(deleteMessages);
         } catch (SQLException e) {
             System.err.println(e.getMessage());
         }
+    }
+
+    public static void deleteMessage(String botId, String channelId, String messageId) {
+        // TODO: implement this
     }
 }
