@@ -1,16 +1,18 @@
 import bots.Bot;
 import bots.TelegramBot;
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientURI;
-import com.mongodb.client.MongoDatabase;
 import models.FileStorage;
 import models.MessageBuilder;
 
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.*;
+import java.util.Map.Entry;
 
 public final class Application {
-    private static MongoDatabase database;
+    private static Connection database;
 
     public static void main(String[] args) throws InterruptedException {
         // TODO: find a way to replace this temporary fix
@@ -27,19 +29,43 @@ public final class Application {
 
         Map<String, Object> channelsConfig = conf.getChannels();
 
-        // Init mongodb
-        MongoClientURI connectionString = new MongoClientURI(conf.getMongoUri());
-        MongoClient mongoClient = new MongoClient(connectionString);
-        Application.database = mongoClient.getDatabase("brooklyn");
-        MessageBuilder.init(Application.database);
+        Application.initDatabase(conf.getDbUri());
 
         Map<String, String> webserverConfig = conf.getWebserverConfig();
         FileStorage.init(webserverConfig);
 
-        Map<String, Bot> bots = Application.initBots(conf.getBots(), channelsConfig, webserverConfig);
-        Application.manageBridges(bots, channelsConfig, conf.getBridges());
+        Map<String, Bot> bots = initBots(conf.getBots(), channelsConfig, webserverConfig);
+        manageBridges(bots, channelsConfig, conf.getBridges());
 
-        Application.handleShutdown();
+        handleShutdown();
+    }
+
+    private static void initDatabase(String dbUri) {
+        String messageTableSql = "CREATE TABLE IF NOT EXISTS messages (\n"
+                + "	id integer PRIMARY KEY AUTOINCREMENT,\n"
+                + "	bot varchar(255) NOT NULL,\n"
+                + "	channel varchar(255) NOT NULL,\n"
+                + "	message varchar(255) NOT NULL\n"
+                + ");";
+
+        String bridgeTableSql = "CREATE TABLE IF NOT EXISTS bridge (\n"
+                + "fromId integer REFERENCES messages(id),\n"
+                + "toId integer REFERENCES messages(id),\n"
+                + "PRIMARY KEY(fromId, toId)"
+                + ");";
+
+        try {
+            Application.database = DriverManager.getConnection(dbUri);
+            Statement createTables = Application.database.createStatement();
+            createTables.execute(messageTableSql);
+            createTables.execute(bridgeTableSql);
+        } catch (SQLException e) {
+            System.err.println("Error loading the database");
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+        MessageBuilder.init(Application.database);
     }
 
     private static Map<String, Bot> initBots(Map<String, Object> botsConfig,
@@ -47,14 +73,14 @@ public final class Application {
                                              Map<String, String> webserverConfig) {
         int AVG_BOTS_N = 3;
         Map<String, Bot> bots = new LinkedHashMap<>(AVG_BOTS_N);
-        for (Map.Entry<String, Object> entry : botsConfig.entrySet()) {
+        for (Entry<String, Object> entry : botsConfig.entrySet()) {
             Map<String, String> botConfig = (Map<String, String>) entry.getValue();
             try {
                 Object newClass = Class.forName(Bot.class.getPackage().getName() + '.' + botConfig.get(Config.BOT_TYPE_KEY)).newInstance();
                 if (newClass instanceof Bot) {
                     Bot bot = (Bot) newClass;
-                    String[] channels = getChannelsName(entry.getKey(), channelsConfig);
-                    if (bot.init(botConfig, channels)) {
+                    String[] channels = Application.getChannelsName(entry.getKey(), channelsConfig);
+                    if (bot.init(entry.getKey(), botConfig, channels)) {
                         bots.put(entry.getKey(), bot);
                         System.out.println(String.format("Bot '%s' initialized.", entry.getKey()));
                     } else
@@ -73,7 +99,7 @@ public final class Application {
     private static String[] getChannelsName(String botName,
                                             Map<String, Object> channelsConfig) {
         List<String> channels = new LinkedList<>();
-        for (Map.Entry<String, Object> entry : channelsConfig.entrySet()) {
+        for (Entry<String, Object> entry : channelsConfig.entrySet()) {
             Map<String, String> channelConfig = (Map<String, String>) entry.getValue();
             if (botName.equals(channelConfig.get(Config.BOT_KEY))) {
                 if (channelConfig.containsKey(Config.NAME_KEY))
@@ -88,11 +114,11 @@ public final class Application {
                                       ArrayList<ArrayList<String>> bridgesConfig) {
         for (Iterable<String> bridgeConfig : bridgesConfig) {
             for (String fromChannelId : bridgeConfig) {
-                String fromBotId = channelToBotId(fromChannelId, channelsConfig);
+                String fromBotId = Application.channelToBotId(fromChannelId, channelsConfig);
                 if (fromBotId != null) {
                     Bot fromBot = bots.get(fromBotId);
                     for (String toChannelId : bridgeConfig) {
-                        String toBotId = channelToBotId(toChannelId, channelsConfig);
+                        String toBotId = Application.channelToBotId(toChannelId, channelsConfig);
                         if (null != toBotId) {
                             Bot toBot = bots.get(toBotId);
                             Map<String, String> toChannelConfig = (Map<String, String>) channelsConfig.get(toChannelId);
@@ -109,7 +135,7 @@ public final class Application {
 
     private static String channelToBotId(String channelId,
                                          Map<String, Object> channelsConfig) {
-        for (Map.Entry<String, Object> entry : channelsConfig.entrySet()) {
+        for (Entry<String, Object> entry : channelsConfig.entrySet()) {
             if (entry.getKey().equals(channelId)) {
                 Map<String, String> channelConfig = (Map<String, String>) entry.getValue();
                 return channelConfig.get(Config.BOT_KEY);
@@ -121,7 +147,12 @@ public final class Application {
 
     private static void handleShutdown() throws InterruptedException {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            Application.database.drop();
+            try {
+                // TODO: drop tables from SQL
+                Application.database.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
             System.out.println("Application terminated");
         }));
 

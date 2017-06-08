@@ -17,7 +17,7 @@ public interface Bot {
     static void sendMessage(BotMessage message, List<Triplet<Bot, String, String>> sendToList,
                             String channelFrom, MessageBuilder builder) {
         for (Triplet<Bot, String, String> sendTo : sendToList) {
-            if (sendTo.getValue2().equals(channelFrom) || channelFrom.equals(Bot.EVERY_CHANNEL)) {
+            if (sendTo.getValue2().equals(channelFrom) || channelFrom.equals(EVERY_CHANNEL)) {
                 String msgId;
                 if (message instanceof BotDocumentMessage) {
                     msgId = sendTo.getValue0().sendMessage(
@@ -30,14 +30,15 @@ public interface Bot {
                     msgId = null;
                 }
 
-                if (null != msgId) {
-                    builder.append(Integer.toString(sendTo.getValue0().hashCode()),
+                if (null != builder && null != msgId) {
+                    builder.append(sendTo.getValue0().getId(),
                             msgId, sendTo.getValue1());
                 }
             }
         }
 
-        builder.saveHistory();
+        if (null != builder)
+            builder.saveHistory();
     }
 
     static List<Triplet<Bot, String, String[]>> askForUsers(
@@ -54,7 +55,7 @@ public interface Bot {
         return allUsers;
     }
 
-    boolean init(Map<String, String> configs, String[] channels);
+    boolean init(String botId, Map<String, String> configs, String[] channels);
 
     void addBridge(Bot bot, String channelTo, String channelFrom);
 
@@ -65,4 +66,6 @@ public interface Bot {
     void deleteMessage(String messageId, String channelId);
 
     String[] getUsers(String channel);
+
+    String getId();
 }
