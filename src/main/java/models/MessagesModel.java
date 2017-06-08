@@ -20,8 +20,8 @@ public class MessagesModel {
                 + ");";
 
         String bridgeTableSql = "CREATE TABLE IF NOT EXISTS bridge (\n"
-                + "fromId integer REFERENCES messages(id),\n"
-                + "toId integer REFERENCES messages(id),\n"
+                + "fromId integer REFERENCES messages(id) ON DELETE CASCADE,\n"
+                + "toId integer REFERENCES messages(id) ON DELETE CASCADE,\n"
                 + "PRIMARY KEY(fromId, toId)"
                 + ");";
 
@@ -34,7 +34,7 @@ public class MessagesModel {
         String deleteBridge = "DROP TABLE bridge;";
         String deleteMessages = "DROP TABLE messages;";
         try {
-            Statement createTables = MessagesModel.database.createStatement();
+            Statement createTables = database.createStatement();
             createTables.execute(deleteBridge);
             createTables.execute(deleteMessages);
         } catch (SQLException e) {
