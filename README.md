@@ -47,7 +47,7 @@ bridges:
 webserver:
   content-folder: "/var/www/html/"
   base-url: "http://localhost/"
-db-uri: "jdbc:sqlite:/srv/brooklyn/messages.db"
+db-uri: "jdbc:sqlite:" # You should not specify a path, so the file is temporary.
 
 ```
 
