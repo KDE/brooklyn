@@ -11,10 +11,10 @@ public class BotDocumentMessage extends BotTextMessage {
     }
 
     public String getFileExtension() {
-        return fileExtension;
+        return this.fileExtension;
     }
 
     public byte[] getDoc() {
-        return doc;
+        return this.doc;
     }
 }
