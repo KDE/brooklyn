@@ -9,6 +9,7 @@ import org.javatuples.Triplet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public interface Bot {
     String EVERY_CHANNEL = "*";
@@ -17,8 +18,8 @@ public interface Bot {
     static void sendMessage(BotMessage message, List<Triplet<Bot, String, String>> sendToList,
                             String channelFrom, MessageBuilder builder) {
         for (Triplet<Bot, String, String> sendTo : sendToList) {
-            if (sendTo.getValue2().equals(channelFrom) || channelFrom.equals(EVERY_CHANNEL)) {
-                String msgId;
+            if (sendTo.getValue2().equals(channelFrom) || channelFrom.equals(Bot.EVERY_CHANNEL)) {
+                Optional<String> msgId;
                 if (message instanceof BotDocumentMessage) {
                     msgId = sendTo.getValue0().sendMessage(
                             (BotDocumentMessage) message, sendTo.getValue1());
@@ -30,9 +31,9 @@ public interface Bot {
                     msgId = null;
                 }
 
-                if (null != builder && null != msgId) {
+                if (null != builder && msgId.isPresent()) {
                     builder.append(sendTo.getValue0().getId(),
-                            msgId, sendTo.getValue1());
+                            msgId.get(), sendTo.getValue1());
                 }
             }
         }
@@ -59,9 +60,9 @@ public interface Bot {
 
     void addBridge(Bot bot, String channelTo, String channelFrom);
 
-    String sendMessage(BotTextMessage msg, String channelTo);
+    Optional<String> sendMessage(BotTextMessage msg, String channelTo);
 
-    String sendMessage(BotDocumentMessage msg, String channelTo);
+    Optional<String> sendMessage(BotDocumentMessage msg, String channelTo);
 
     void editMessage(BotTextMessage msg, String channelTo, String messageId);
 

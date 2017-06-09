@@ -8,7 +8,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.Map.Entry;
 
 public final class Application {
     private static Connection database;
@@ -28,21 +27,21 @@ public final class Application {
 
         Map<String, Object> channelsConfig = conf.getChannels();
 
-        Application.initDatabase(conf.getDbUri());
+        initDatabase(conf.getDbUri());
 
         Map<String, String> webserverConfig = conf.getWebserverConfig();
         FileStorage.init(webserverConfig);
 
-        Map<String, Bot> bots = initBots(conf.getBots(), channelsConfig, webserverConfig);
-        manageBridges(bots, channelsConfig, conf.getBridges());
+        Map<String, Bot> bots = Application.initBots(conf.getBots(), channelsConfig, webserverConfig);
+        Application.manageBridges(bots, channelsConfig, conf.getBridges());
 
-        handleShutdown();
+        Application.handleShutdown();
     }
 
     private static void initDatabase(String dbUri) {
         try {
-            Application.database = DriverManager.getConnection(dbUri);
-            MessagesModel.init(Application.database);
+            database = DriverManager.getConnection(dbUri);
+            MessagesModel.init(database);
         } catch (SQLException e) {
             System.err.println("Error loading the database");
             e.printStackTrace();
@@ -54,7 +53,7 @@ public final class Application {
                                              Map<String, String> webserverConfig) {
         int AVG_BOTS_N = 3;
         Map<String, Bot> bots = new LinkedHashMap<>(AVG_BOTS_N);
-        for (Entry<String, Object> entry : botsConfig.entrySet()) {
+        for (Map.Entry<String, Object> entry : botsConfig.entrySet()) {
             Map<String, String> botConfig = (Map<String, String>) entry.getValue();
             try {
                 Object newClass = Class.forName(Bot.class.getPackage().getName() + '.' + botConfig.get(Config.BOT_TYPE_KEY)).newInstance();
@@ -80,7 +79,7 @@ public final class Application {
     private static String[] getChannelsName(String botName,
                                             Map<String, Object> channelsConfig) {
         List<String> channels = new LinkedList<>();
-        for (Entry<String, Object> entry : channelsConfig.entrySet()) {
+        for (Map.Entry<String, Object> entry : channelsConfig.entrySet()) {
             Map<String, String> channelConfig = (Map<String, String>) entry.getValue();
             if (botName.equals(channelConfig.get(Config.BOT_KEY))) {
                 if (channelConfig.containsKey(Config.NAME_KEY))
@@ -95,13 +94,13 @@ public final class Application {
                                       ArrayList<ArrayList<String>> bridgesConfig) {
         for (Iterable<String> bridgeConfig : bridgesConfig) {
             for (String fromChannelId : bridgeConfig) {
-                String fromBotId = channelToBotId(fromChannelId, channelsConfig);
-                if (fromBotId != null) {
-                    Bot fromBot = bots.get(fromBotId);
+                Optional<String> fromBotId = channelToBotId(fromChannelId, channelsConfig);
+                if (fromBotId.isPresent()) {
+                    Bot fromBot = bots.get(fromBotId.get());
                     for (String toChannelId : bridgeConfig) {
-                        String toBotId = channelToBotId(toChannelId, channelsConfig);
-                        if (null != toBotId) {
-                            Bot toBot = bots.get(toBotId);
+                        Optional<String> toBotId = channelToBotId(toChannelId, channelsConfig);
+                        if (toBotId.isPresent()) {
+                            Bot toBot = bots.get(toBotId.get());
                             Map<String, String> toChannelConfig = (Map<String, String>) channelsConfig.get(toChannelId);
                             Map<String, String> fromChannelConfig = (Map<String, String>) channelsConfig.get(fromChannelId);
 
@@ -114,23 +113,23 @@ public final class Application {
         }
     }
 
-    private static String channelToBotId(String channelId,
-                                         Map<String, Object> channelsConfig) {
-        for (Entry<String, Object> entry : channelsConfig.entrySet()) {
+    private static Optional<String> channelToBotId(String channelId,
+                                                   Map<String, Object> channelsConfig) {
+        for (Map.Entry<String, Object> entry : channelsConfig.entrySet()) {
             if (entry.getKey().equals(channelId)) {
                 Map<String, String> channelConfig = (Map<String, String>) entry.getValue();
-                return channelConfig.get(Config.BOT_KEY);
+                return Optional.ofNullable(channelConfig.get(Config.BOT_KEY));
             }
         }
 
-        return null;
+        return Optional.empty();
     }
 
     private static void handleShutdown() throws InterruptedException {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
                 MessagesModel.clean();
-                Application.database.close();
+                database.close();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
