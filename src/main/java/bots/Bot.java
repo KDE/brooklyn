@@ -16,9 +16,9 @@ public interface Bot {
     String LOCATION_TO_URL = "https://www.openstreetmap.org/?mlat=%s&&mlon=%s";
 
     static void sendMessage(BotMessage message, List<Triplet<Bot, String, String>> sendToList,
-                            String channelFrom, MessageBuilder builder) {
+                            String channelFrom, Optional<MessageBuilder> optionalBuilder) {
         for (Triplet<Bot, String, String> sendTo : sendToList) {
-            if (sendTo.getValue2().equals(channelFrom) || channelFrom.equals(Bot.EVERY_CHANNEL)) {
+            if (sendTo.getValue2().equals(channelFrom) || channelFrom.equals(EVERY_CHANNEL)) {
                 Optional<String> msgId;
                 if (message instanceof BotDocumentMessage) {
                     msgId = sendTo.getValue0().sendMessage(
@@ -31,15 +31,15 @@ public interface Bot {
                     msgId = null;
                 }
 
-                if (null != builder && msgId.isPresent()) {
-                    builder.append(sendTo.getValue0().getId(),
+                if (optionalBuilder.isPresent() && msgId.isPresent()) {
+                    optionalBuilder.get().append(sendTo.getValue0().getId(),
                             msgId.get(), sendTo.getValue1());
                 }
             }
         }
 
-        if (null != builder)
-            builder.saveHistory();
+        if (optionalBuilder.isPresent())
+            optionalBuilder.get().saveHistory();
     }
 
     static List<Triplet<Bot, String, String[]>> askForUsers(
