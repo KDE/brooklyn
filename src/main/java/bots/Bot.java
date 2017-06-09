@@ -18,7 +18,7 @@ public interface Bot {
     static void sendMessage(BotMessage message, List<Triplet<Bot, String, String>> sendToList,
                             String channelFrom, Optional<MessageBuilder> optionalBuilder) {
         for (Triplet<Bot, String, String> sendTo : sendToList) {
-            if (sendTo.getValue2().equals(channelFrom) || channelFrom.equals(EVERY_CHANNEL)) {
+            if (sendTo.getValue2().equals(channelFrom) || channelFrom.equals(Bot.EVERY_CHANNEL)) {
                 Optional<String> msgId;
                 if (message instanceof BotDocumentMessage) {
                     msgId = sendTo.getValue0().sendMessage(
@@ -28,7 +28,7 @@ public interface Bot {
                             (BotTextMessage) message, sendTo.getValue1());
                 } else {
                     System.err.println("Type of message not valid");
-                    msgId = null;
+                    msgId = Optional.empty();
                 }
 
                 if (optionalBuilder.isPresent() && msgId.isPresent()) {
