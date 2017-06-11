@@ -19,7 +19,7 @@ public interface Bot {
     static void sendMessage(BotMessage message, List<Triplet<Bot, String, String>> sendToList,
                             String channelFrom, Optional<MessageBuilder> optionalBuilder) {
         for (Triplet<Bot, String, String> sendTo : sendToList) {
-            if (sendTo.getValue2().equals(channelFrom) || channelFrom.equals(Bot.EVERY_CHANNEL)) {
+            if (sendTo.getValue2().equals(channelFrom) || channelFrom.equals(EVERY_CHANNEL)) {
                 Optional<String> msgId;
                 if (message instanceof BotDocumentMessage) {
                     msgId = sendTo.getValue0().sendMessage(
@@ -53,7 +53,7 @@ public interface Bot {
                             String channelFrom,
                             String messageId) {
         for (Triplet<Bot, String, String> sendTo : sendToList) {
-            if (sendTo.getValue2().equals(channelFrom) || channelFrom.equals(Bot.EVERY_CHANNEL)) {
+            if (sendTo.getValue2().equals(channelFrom) || channelFrom.equals(EVERY_CHANNEL)) {
                 Optional<String> message = MessagesModel.getChildMessage(messageText.getBotFrom().getId(),
                         messageText.getChannelFrom(), messageId,
                         sendTo.getValue0().getId(), sendTo.getValue1());
@@ -91,4 +91,6 @@ public interface Bot {
     String[] getUsers(String channel);
 
     String getId();
+
+    String channelIdToName(String channelId);
 }
