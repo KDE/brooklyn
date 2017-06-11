@@ -19,7 +19,7 @@ public interface Bot {
     static void sendMessage(BotMessage message, List<Triplet<Bot, String, String>> sendToList,
                             String channelFrom, Optional<MessageBuilder> optionalBuilder) {
         sendToList.stream()
-                .filter(sendTo -> sendTo.getValue2().equals(channelFrom) || channelFrom.equals(EVERY_CHANNEL))
+                .filter(sendTo -> sendTo.getValue2().equals(channelFrom) || channelFrom.equals(Bot.EVERY_CHANNEL))
                 .forEach(sendTo -> {
                     Optional<String> msgId;
                     if (message instanceof BotDocumentMessage) {
@@ -34,14 +34,8 @@ public interface Bot {
                     }
 
                     if (optionalBuilder.isPresent()) {
-                        String fakeMsgId;
-                        if (msgId.isPresent())
-                            fakeMsgId = msgId.get();
-                        else
-                            fakeMsgId = "-1"; // If there isn't any message id, set to -1
-
                         optionalBuilder.get().append(sendTo.getValue0().getId(),
-                                sendTo.getValue1(), fakeMsgId);
+                                sendTo.getValue1(), msgId.orElse("-1"));
                     }
                 });
 
@@ -53,14 +47,14 @@ public interface Bot {
                             String channelFrom,
                             String messageId) {
         sendToList.stream()
-                .filter(sendTo -> sendTo.getValue2().equals(channelFrom) || channelFrom.equals(EVERY_CHANNEL))
+                .filter(sendTo -> sendTo.getValue2().equals(channelFrom) || channelFrom.equals(Bot.EVERY_CHANNEL))
                 .forEach(sendTo -> {
-                Optional<String> message = MessagesModel.getChildMessage(messageText.getBotFrom().getId(),
-                        messageText.getChannelFrom(), messageId,
-                        sendTo.getValue0().getId(), sendTo.getValue1());
-                if (message.isPresent()) {
-                    sendTo.getValue0().editMessage(messageText, sendTo.getValue1(), message.get());
-                }
+                    Optional<String> message = MessagesModel.getChildMessage(messageText.getBotFrom().getId(),
+                            messageText.getChannelFrom(), messageId,
+                            sendTo.getValue0().getId(), sendTo.getValue1());
+                    if (message.isPresent()) {
+                        sendTo.getValue0().editMessage(messageText, sendTo.getValue1(), message.get());
+                    }
                 });
     }
 
