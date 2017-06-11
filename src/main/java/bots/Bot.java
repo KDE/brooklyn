@@ -19,7 +19,7 @@ public interface Bot {
     static void sendMessage(BotMessage message, List<Triplet<Bot, String, String>> sendToList,
                             String channelFrom, Optional<MessageBuilder> optionalBuilder) {
         for (Triplet<Bot, String, String> sendTo : sendToList) {
-            if (sendTo.getValue2().equals(channelFrom) || channelFrom.equals(EVERY_CHANNEL)) {
+            if (sendTo.getValue2().equals(channelFrom) || channelFrom.equals(Bot.EVERY_CHANNEL)) {
                 Optional<String> msgId;
                 if (message instanceof BotDocumentMessage) {
                     msgId = sendTo.getValue0().sendMessage(
@@ -29,12 +29,18 @@ public interface Bot {
                             (BotTextMessage) message, sendTo.getValue1());
                 } else {
                     System.err.println("Type of message not valid");
-                    msgId = Optional.empty();
+                    continue;
                 }
 
-                if (optionalBuilder.isPresent() && msgId.isPresent()) {
+                if (optionalBuilder.isPresent()) {
+                    String fakeMsgId;
+                    if (msgId.isPresent())
+                        fakeMsgId = msgId.get();
+                    else
+                        fakeMsgId = "-1"; // If there isn't any message id, set to -1
+
                     optionalBuilder.get().append(sendTo.getValue0().getId(),
-                            sendTo.getValue1(), msgId.get());
+                            sendTo.getValue1(), fakeMsgId);
                 }
             }
         }
@@ -47,7 +53,7 @@ public interface Bot {
                             String channelFrom,
                             String messageId) {
         for (Triplet<Bot, String, String> sendTo : sendToList) {
-            if (sendTo.getValue2().equals(channelFrom) || channelFrom.equals(EVERY_CHANNEL)) {
+            if (sendTo.getValue2().equals(channelFrom) || channelFrom.equals(Bot.EVERY_CHANNEL)) {
                 Optional<String> message = MessagesModel.getChildMessage(messageText.getBotFrom().getId(),
                         messageText.getChannelFrom(), messageId,
                         sendTo.getValue0().getId(), sendTo.getValue1());
