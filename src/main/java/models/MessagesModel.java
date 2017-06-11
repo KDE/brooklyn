@@ -34,7 +34,7 @@ public class MessagesModel {
         String deleteBridge = "DROP TABLE bridge;";
         String deleteMessages = "DROP TABLE messages;";
         try {
-            Statement createTables = MessagesModel.database.createStatement();
+            Statement createTables = database.createStatement();
             createTables.execute(deleteBridge);
             createTables.execute(deleteMessages);
             createTables.close();
@@ -46,19 +46,19 @@ public class MessagesModel {
     public static Optional<String> getChildMessage(String botIdFrom, String channelIdFrom, String messageIdFrom,
                                                    String botIdTo, String channelIdTo) {
         String query = "SELECT toMessages.message \n"
-                + "FROM messages fromMessages INNER JOIN bridge ON fromMessages.id = bridge.fromId \n"
-                + "INNER JOIN messages toMessages ON toMessages.id = bridge.toId"
-                + "WHERE fromMessages.bot = ? AND fromMessages.channel = ? AND fromMessage.message = ? \n"
+                + "FROM ((messages fromMessages INNER JOIN bridge ON fromMessages.id = bridge.fromId) \n"
+                + "INNER JOIN messages toMessages ON toMessages.id = bridge.toId)"
+                + "WHERE fromMessages.bot = ? AND fromMessages.channel = ? AND fromMessages.message = ? \n"
                 + "AND toMessages.bot = ? AND toMessages.channel = ? \n"
                 + "LIMIT 1;";
 
         Optional<String> output = Optional.empty();
-        try (final PreparedStatement pstmt = MessagesModel.database.prepareStatement(query)) {
+        try (final PreparedStatement pstmt = database.prepareStatement(query)) {
             pstmt.setString(1, botIdFrom);
             pstmt.setString(2, channelIdFrom);
-            pstmt.setString(1, messageIdFrom);
-            pstmt.setString(2, botIdTo);
-            pstmt.setString(3, channelIdTo);
+            pstmt.setString(3, messageIdFrom);
+            pstmt.setString(4, botIdTo);
+            pstmt.setString(5, channelIdTo);
 
             ResultSet rs = pstmt.executeQuery();
             if (rs.next())

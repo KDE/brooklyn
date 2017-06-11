@@ -19,7 +19,7 @@ public interface Bot {
     static void sendMessage(BotMessage message, List<Triplet<Bot, String, String>> sendToList,
                             String channelFrom, Optional<MessageBuilder> optionalBuilder) {
         for (Triplet<Bot, String, String> sendTo : sendToList) {
-            if (sendTo.getValue2().equals(channelFrom) || channelFrom.equals(Bot.EVERY_CHANNEL)) {
+            if (sendTo.getValue2().equals(channelFrom) || channelFrom.equals(EVERY_CHANNEL)) {
                 Optional<String> msgId;
                 if (message instanceof BotDocumentMessage) {
                     msgId = sendTo.getValue0().sendMessage(
@@ -34,7 +34,7 @@ public interface Bot {
 
                 if (optionalBuilder.isPresent() && msgId.isPresent()) {
                     optionalBuilder.get().append(sendTo.getValue0().getId(),
-                            msgId.get(), sendTo.getValue1());
+                            sendTo.getValue1(), msgId.get());
                 }
             }
         }
@@ -44,12 +44,16 @@ public interface Bot {
     }
 
     static void editMessage(BotTextMessage messageText, List<Triplet<Bot, String, String>> sendToList,
-                            Bot botFrom, String channelIdFrom, String messageId) {
+                            String channelFrom,
+                            String messageId) {
         for (Triplet<Bot, String, String> sendTo : sendToList) {
-            Optional<String> message = MessagesModel.getChildMessage(botFrom.toString(), channelIdFrom, messageId,
-                    sendTo.getValue0().toString(), sendTo.getValue1());
-            if (message.isPresent()) {
-                sendTo.getValue0().editMessage(messageText, sendTo.getValue1(), messageId);
+            if (sendTo.getValue2().equals(channelFrom) || channelFrom.equals(EVERY_CHANNEL)) {
+                Optional<String> message = MessagesModel.getChildMessage(messageText.getBotFrom().getId(),
+                        messageText.getChannelFrom(), messageId,
+                        sendTo.getValue0().getId(), sendTo.getValue1());
+                if (message.isPresent()) {
+                    sendTo.getValue0().editMessage(messageText, sendTo.getValue1(), message.get());
+                }
             }
         }
     }
