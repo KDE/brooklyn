@@ -4,6 +4,7 @@ import messages.BotDocumentMessage;
 import messages.BotMessage;
 import messages.BotTextMessage;
 import models.MessageBuilder;
+import models.MessagesModel;
 import org.javatuples.Triplet;
 
 import java.util.ArrayList;
@@ -18,7 +19,7 @@ public interface Bot {
     static void sendMessage(BotMessage message, List<Triplet<Bot, String, String>> sendToList,
                             String channelFrom, Optional<MessageBuilder> optionalBuilder) {
         for (Triplet<Bot, String, String> sendTo : sendToList) {
-            if (sendTo.getValue2().equals(channelFrom) || channelFrom.equals(EVERY_CHANNEL)) {
+            if (sendTo.getValue2().equals(channelFrom) || channelFrom.equals(Bot.EVERY_CHANNEL)) {
                 Optional<String> msgId;
                 if (message instanceof BotDocumentMessage) {
                     msgId = sendTo.getValue0().sendMessage(
@@ -42,9 +43,15 @@ public interface Bot {
             optionalBuilder.get().saveHistory();
     }
 
-    static void editMessage(BotTextMessage message, List<Triplet<Bot, String, String>> sendToList,
-                            List<Triplet<String, String, String>> messages) {
-
+    static void editMessage(BotTextMessage messageText, List<Triplet<Bot, String, String>> sendToList,
+                            Bot botFrom, String channelIdFrom, String messageId) {
+        for (Triplet<Bot, String, String> sendTo : sendToList) {
+            Optional<String> message = MessagesModel.getChildMessage(botFrom.toString(), channelIdFrom, messageId,
+                    sendTo.getValue0().toString(), sendTo.getValue1());
+            if (message.isPresent()) {
+                sendTo.getValue0().editMessage(messageText, sendTo.getValue1(), messageId);
+            }
+        }
     }
 
     static List<Triplet<Bot, String, String[]>> askForUsers(
