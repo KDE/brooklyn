@@ -19,7 +19,7 @@ public interface Bot {
     static void sendMessage(BotMessage message, List<Triplet<Bot, String, String>> sendToList,
                             String channelFrom, Optional<MessageBuilder> optionalBuilder) {
         for (Triplet<Bot, String, String> sendTo : sendToList) {
-            if (sendTo.getValue2().equals(channelFrom) || channelFrom.equals(EVERY_CHANNEL)) {
+            if (sendTo.getValue2().equals(channelFrom) || channelFrom.equals(Bot.EVERY_CHANNEL)) {
                 Optional<String> msgId;
                 if (message instanceof BotDocumentMessage) {
                     msgId = sendTo.getValue0().sendMessage(
@@ -53,7 +53,7 @@ public interface Bot {
                             String channelFrom,
                             String messageId) {
         for (Triplet<Bot, String, String> sendTo : sendToList) {
-            if (sendTo.getValue2().equals(channelFrom) || channelFrom.equals(EVERY_CHANNEL)) {
+            if (sendTo.getValue2().equals(channelFrom) || channelFrom.equals(Bot.EVERY_CHANNEL)) {
                 Optional<String> message = MessagesModel.getChildMessage(messageText.getBotFrom().getId(),
                         messageText.getChannelFrom(), messageId,
                         sendTo.getValue0().getId(), sendTo.getValue1());
@@ -76,6 +76,18 @@ public interface Bot {
         }
 
         return allUsers;
+    }
+
+    static String messageFormatter(String botFrom,
+                                   String channelFrom,
+                                   String nicknameFrom,
+                                   Optional<String> message) {
+        if (message.isPresent())
+            return String.format("%s/%s/%s: %s",
+                    botFrom, channelFrom, nicknameFrom, message.get());
+
+        return String.format("%s/%s/%s",
+                botFrom, channelFrom, nicknameFrom);
     }
 
     boolean init(String botId, Map<String, String> configs, String[] channels);
