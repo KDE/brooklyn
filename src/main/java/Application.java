@@ -8,6 +8,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.Map.Entry;
 
 public final class Application {
     private static Connection database;
@@ -27,21 +28,21 @@ public final class Application {
 
         Map<String, Object> channelsConfig = conf.getChannels();
 
-        initDatabase(conf.getDbUri());
+        Application.initDatabase(conf.getDbUri());
 
         Map<String, String> webserverConfig = conf.getWebserverConfig();
         FileStorage.init(webserverConfig);
 
-        Map<String, Bot> bots = Application.initBots(conf.getBots(), channelsConfig, webserverConfig);
-        Application.manageBridges(bots, channelsConfig, conf.getBridges());
+        Map<String, Bot> bots = initBots(conf.getBots(), channelsConfig, webserverConfig);
+        manageBridges(bots, channelsConfig, conf.getBridges());
 
-        Application.handleShutdown();
+        handleShutdown();
     }
 
     private static void initDatabase(String dbUri) {
         try {
-            database = DriverManager.getConnection(dbUri);
-            MessagesModel.init(database);
+            Application.database = DriverManager.getConnection(dbUri);
+            MessagesModel.init(Application.database);
         } catch (SQLException e) {
             System.err.println("Error loading the database");
             e.printStackTrace();
@@ -53,13 +54,13 @@ public final class Application {
                                              Map<String, String> webserverConfig) {
         int AVG_BOTS_N = 3;
         Map<String, Bot> bots = new LinkedHashMap<>(AVG_BOTS_N);
-        for (Map.Entry<String, Object> entry : botsConfig.entrySet()) {
+        botsConfig.entrySet().forEach(entry -> {
             Map<String, String> botConfig = (Map<String, String>) entry.getValue();
             try {
                 Object newClass = Class.forName(Bot.class.getPackage().getName() + '.' + botConfig.get(Config.BOT_TYPE_KEY)).newInstance();
                 if (newClass instanceof Bot) {
                     Bot bot = (Bot) newClass;
-                    String[] channels = getChannelsName(entry.getKey(), channelsConfig);
+                    String[] channels = Application.getChannelsName(entry.getKey(), channelsConfig);
                     if (bot.init(entry.getKey(), botConfig, channels)) {
                         bots.put(entry.getKey(), bot);
                         System.out.println(String.format("Bot '%s' initialized.", entry.getKey()));
@@ -71,7 +72,7 @@ public final class Application {
                 System.err.println(String.format("Class of type '%s' can't be instantiated.", botConfig.get(Config.BOT_TYPE_KEY)));
                 e.printStackTrace();
             }
-        }
+        });
 
         return bots;
     }
@@ -79,26 +80,27 @@ public final class Application {
     private static String[] getChannelsName(String botName,
                                             Map<String, Object> channelsConfig) {
         List<String> channels = new LinkedList<>();
-        for (Map.Entry<String, Object> entry : channelsConfig.entrySet()) {
+        channelsConfig.entrySet().forEach(entry -> {
             Map<String, String> channelConfig = (Map<String, String>) entry.getValue();
             if (botName.equals(channelConfig.get(Config.BOT_KEY))) {
                 if (channelConfig.containsKey(Config.NAME_KEY))
                     channels.add(channelConfig.get(Config.NAME_KEY));
             }
-        }
+        });
+
         return channels.toArray(new String[channels.size()]);
     }
 
     private static void manageBridges(Map<String, Bot> bots,
                                       Map<String, Object> channelsConfig,
                                       ArrayList<ArrayList<String>> bridgesConfig) {
-        for (Iterable<String> bridgeConfig : bridgesConfig) {
-            for (String fromChannelId : bridgeConfig) {
-                Optional<String> fromBotId = channelToBotId(fromChannelId, channelsConfig);
+        bridgesConfig.forEach(bridgeConfig -> {
+            bridgeConfig.forEach(fromChannelId -> {
+                Optional<String> fromBotId = Application.channelToBotId(fromChannelId, channelsConfig);
                 if (fromBotId.isPresent()) {
                     Bot fromBot = bots.get(fromBotId.get());
-                    for (String toChannelId : bridgeConfig) {
-                        Optional<String> toBotId = channelToBotId(toChannelId, channelsConfig);
+                    bridgeConfig.forEach(toChannelId -> {
+                        Optional<String> toBotId = Application.channelToBotId(toChannelId, channelsConfig);
                         if (toBotId.isPresent()) {
                             Bot toBot = bots.get(toBotId.get());
                             Map<String, String> toChannelConfig = (Map<String, String>) channelsConfig.get(toChannelId);
@@ -107,15 +109,15 @@ public final class Application {
                             if (!fromChannelId.equals(toChannelId))
                                 fromBot.addBridge(toBot, toChannelConfig.get(Config.NAME_KEY), fromChannelConfig.get(Config.NAME_KEY));
                         }
-                    }
+                    });
                 }
-            }
-        }
+            });
+        });
     }
 
     private static Optional<String> channelToBotId(String channelId,
                                                    Map<String, Object> channelsConfig) {
-        for (Map.Entry<String, Object> entry : channelsConfig.entrySet()) {
+        for (Entry<String, Object> entry : channelsConfig.entrySet()) {
             if (entry.getKey().equals(channelId)) {
                 Map<String, String> channelConfig = (Map<String, String>) entry.getValue();
                 return Optional.ofNullable(channelConfig.get(Config.BOT_KEY));
@@ -129,7 +131,7 @@ public final class Application {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
                 MessagesModel.clean();
-                database.close();
+                Application.database.close();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
