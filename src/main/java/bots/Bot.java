@@ -18,7 +18,7 @@ public interface Bot {
     static void sendMessage(BotMessage message, List<Triplet<Bot, String, String>> sendToList,
                             String channelFrom, Optional<MessageBuilder> optionalBuilder) {
         for (Triplet<Bot, String, String> sendTo : sendToList) {
-            if (sendTo.getValue2().equals(channelFrom) || channelFrom.equals(Bot.EVERY_CHANNEL)) {
+            if (sendTo.getValue2().equals(channelFrom) || channelFrom.equals(EVERY_CHANNEL)) {
                 Optional<String> msgId;
                 if (message instanceof BotDocumentMessage) {
                     msgId = sendTo.getValue0().sendMessage(
@@ -40,6 +40,11 @@ public interface Bot {
 
         if (optionalBuilder.isPresent())
             optionalBuilder.get().saveHistory();
+    }
+
+    static void editMessage(BotTextMessage message, List<Triplet<Bot, String, String>> sendToList,
+                            List<Triplet<String, String, String>> messages) {
+
     }
 
     static List<Triplet<Bot, String, String[]>> askForUsers(

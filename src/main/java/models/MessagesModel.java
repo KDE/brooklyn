@@ -1,10 +1,7 @@
 package models;
 
-import org.javatuples.Triplet;
-
 import java.sql.*;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Optional;
 
 public class MessagesModel {
     private static Connection database;
@@ -37,7 +34,7 @@ public class MessagesModel {
         String deleteBridge = "DROP TABLE bridge;";
         String deleteMessages = "DROP TABLE messages;";
         try {
-            Statement createTables = MessagesModel.database.createStatement();
+            Statement createTables = database.createStatement();
             createTables.execute(deleteBridge);
             createTables.execute(deleteMessages);
             createTables.close();
@@ -46,30 +43,31 @@ public class MessagesModel {
         }
     }
 
-    public static List<Triplet<String, String, String>> getChildMessages(String botId, String channelId, String messageId) {
-        String query = "SELECT bot, channel, message \n"
-                + "FROM messages INNER JOIN bridge ON messages.id = bridge.fromId \n"
-                + "WHERE bridge.toId = \n"
-                + "(SELECT id FROM messages WHERE bot=? AND channel=? AND message=?)\n"
-                + ");";
+    public static Optional<String> getChildMessages(String botIdFrom, String channelIdFrom, String messageIdFrom,
+                                                    String botIdTo, String channelIdTo) {
+        String query = "SELECT toMessages.message \n"
+                + "FROM messages fromMessages INNER JOIN bridge ON fromMessages.id = bridge.fromId \n"
+                + "INNER JOIN messages toMessages ON toMessages.id = bridge.toId"
+                + "WHERE fromMessages.bot = ? AND fromMessages.channel = ? AND fromMessage.message = ? \n"
+                + "AND toMessages.bot = ? AND toMessages.channel = ? \n"
+                + "LIMIT 1;";
 
-        try (final PreparedStatement pstmt = MessagesModel.database.prepareStatement(query)) {
-            pstmt.setString(1, botId);
-            pstmt.setString(2, channelId);
-            pstmt.setString(3, messageId);
+        Optional<String> output = Optional.empty();
+        try (final PreparedStatement pstmt = database.prepareStatement(query)) {
+            pstmt.setString(1, botIdFrom);
+            pstmt.setString(2, channelIdFrom);
+            pstmt.setString(1, messageIdFrom);
+            pstmt.setString(2, botIdTo);
+            pstmt.setString(3, channelIdTo);
 
             ResultSet rs = pstmt.executeQuery();
-            List<Triplet<String, String, String>> result = new LinkedList();
-            while (rs.next()) {
-                result.add(new Triplet<>(rs.getString("bot"),
-                        rs.getString("channel"), rs.getString("message")));
-            }
+            if (rs.next())
+                output = Optional.ofNullable(rs.getString("message"));
             rs.close();
-            return result;
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
-        return new LinkedList<>();
+        return output;
     }
 }
