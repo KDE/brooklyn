@@ -13,8 +13,7 @@ import org.javatuples.Triplet;
 import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.TelegramBotsApi;
 import org.telegram.telegrambots.api.methods.GetFile;
-import org.telegram.telegrambots.api.methods.send.SendDocument;
-import org.telegram.telegrambots.api.methods.send.SendMessage;
+import org.telegram.telegrambots.api.methods.send.*;
 import org.telegram.telegrambots.api.methods.updatingmessages.EditMessageCaption;
 import org.telegram.telegrambots.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.api.objects.*;
@@ -357,6 +356,18 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
         try (InputStream docStream = new ByteArrayInputStream(msg.getDoc())) {
             Message sentMessage;
             switch (msg.getDocumentType()) {
+                case IMAGE:
+                    sentMessage = this.sendImage(caption, channelTo,
+                            docStream, msg.getFileExtension());
+                    break;
+                case AUDIO:
+                    sentMessage = this.sendAudio(caption, channelTo,
+                            docStream, msg.getFileExtension());
+                    break;
+                case VIDEO:
+                    sentMessage = this.sendVideo(caption, channelTo,
+                            docStream, msg.getFileExtension());
+                    break;
                 default:
                     sentMessage = this.sendDocument(caption, channelTo,
                             docStream, msg.getFileExtension());
@@ -380,6 +391,42 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
 
         message.setNewDocument("doc." + fileExtension, docStream);
         return this.sendDocument(message);
+    }
+
+    private Message sendImage(String caption, String channelTo, InputStream docStream,
+                              String fileExtension)
+            throws TelegramApiException {
+
+        SendPhoto message = new SendPhoto()
+                .setChatId(channelTo);
+        message.setCaption(caption);
+
+        message.setNewPhoto("img." + fileExtension, docStream);
+        return this.sendPhoto(message);
+    }
+
+    private Message sendAudio(String caption, String channelTo, InputStream docStream,
+                              String fileExtension)
+            throws TelegramApiException {
+
+        SendAudio message = new SendAudio()
+                .setChatId(channelTo);
+        message.setCaption(caption);
+
+        message.setNewAudio("audio." + fileExtension, docStream);
+        return this.sendAudio(message);
+    }
+
+    private Message sendVideo(String caption, String channelTo, InputStream docStream,
+                              String fileExtension)
+            throws TelegramApiException {
+
+        SendVideo message = new SendVideo()
+                .setChatId(channelTo);
+        message.setCaption(caption);
+
+        message.setNewVideo("audio." + fileExtension, docStream);
+        return this.sendVideo(message);
     }
 
     @Override
