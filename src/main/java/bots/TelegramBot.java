@@ -43,9 +43,9 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
     private String botId;
 
     public TelegramBot() {
-        configs = new LinkedHashMap<String, String>();
-        if (telegramBotsApi == null) {
-            telegramBotsApi = new TelegramBotsApi();
+        this.configs = new LinkedHashMap<String, String>();
+        if (TelegramBot.telegramBotsApi == null) {
+            TelegramBot.telegramBotsApi = new TelegramBotsApi();
         }
     }
 
@@ -55,10 +55,10 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
 
     @Override
     public boolean init(String botId, Map<String, String> botConfigs, String[] channels) {
-        configs = botConfigs;
+        this.configs = botConfigs;
 
         try {
-            telegramBotsApi.registerBot(this);
+            TelegramBot.telegramBotsApi.registerBot(this);
         } catch (TelegramApiRequestException e) {
             return false;
         }
@@ -72,8 +72,8 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
         GetFile getFile = new GetFile();
         getFile.setFileId(fileId);
 
-        File file = getFile(getFile);
-        URL fileUrl = new URL(file.getFileUrl(configs.get(TOKEN_KEY)));
+        File file = this.getFile(getFile);
+        URL fileUrl = new URL(file.getFileUrl(this.configs.get(TelegramBot.TOKEN_KEY)));
         HttpURLConnection httpConn = (HttpURLConnection) fileUrl.openConnection();
         InputStream inputStream = httpConn.getInputStream();
         byte[] output = IOUtils.toByteArray(inputStream);
@@ -93,14 +93,14 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
         if (update.hasMessage()) {
             Message msg = update.getMessage();
             User user = msg.getFrom();
-            users.add(user.getUserName());
+            this.users.add(user.getUserName());
 
-            Optional<MessageBuilder> builder = Optional.ofNullable(new MessageBuilder(getId(),
+            Optional<MessageBuilder> builder = Optional.ofNullable(new MessageBuilder(this.getId(),
                     msg.getChatId().toString(), msg.getMessageId().toString()));
 
             if (update.hasMessage()) {
                 Chat chat = msg.getChat();
-                this.chats.put(chat.getId(), chat.getTitle());
+                chats.put(chat.getId(), chat.getTitle());
 
                 String channelFrom = chat.getTitle();
                 String authorNickname = user.getUserName();
@@ -113,14 +113,14 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
 
                     PhotoSize photo = photos.get(photos.size() - 1);
                     try {
-                        Pair<byte[], String> data = downloadFromFileId(photo.getFileId());
+                        Pair<byte[], String> data = this.downloadFromFileId(photo.getFileId());
 
                         String text = msg.getCaption();
                         BotTextMessage textMessage = new BotTextMessage(message, text);
                         BotDocumentMessage imgMessage = new BotDocumentMessage(textMessage,
                                 data.getValue1(), data.getValue0(), BotDocumentType.IMAGE);
 
-                        botsController.sendMessage(imgMessage, chat.getId().toString(), builder);
+                        this.botsController.sendMessage(imgMessage, chat.getId().toString(), builder);
                     } catch (TelegramApiException | IOException e) {
                         System.err.println("Error loading the img received");
                         e.printStackTrace();
@@ -131,13 +131,13 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
                 else if (telegramMessage.getVoice() != null) {
                     Voice voice = telegramMessage.getVoice();
                     try {
-                        Pair<byte[], String> data = downloadFromFileId(voice.getFileId());
+                        Pair<byte[], String> data = this.downloadFromFileId(voice.getFileId());
 
                         String text = msg.getText();
                         BotTextMessage textMessage = new BotTextMessage(message, text);
                         BotDocumentMessage docMessage = new BotDocumentMessage(textMessage,
                                 data.getValue1(), data.getValue0(), BotDocumentType.VIDEO);
-                        botsController.sendMessage(docMessage, chat.getId().toString(), builder);
+                        this.botsController.sendMessage(docMessage, chat.getId().toString(), builder);
                     } catch (TelegramApiException | IOException e) {
                         System.err.println("Error loading the voice message received");
                         e.printStackTrace();
@@ -149,13 +149,13 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
                     Document document = telegramMessage.getDocument();
 
                     try {
-                        Pair<byte[], String> data = downloadFromFileId(document.getFileId());
+                        Pair<byte[], String> data = this.downloadFromFileId(document.getFileId());
 
                         String text = msg.getText();
                         BotTextMessage textMessage = new BotTextMessage(message, text);
                         BotDocumentMessage docMessage = new BotDocumentMessage(textMessage,
                                 data.getValue1(), data.getValue0(), BotDocumentType.OTHER);
-                        botsController.sendMessage(docMessage, chat.getId().toString(), builder);
+                        this.botsController.sendMessage(docMessage, chat.getId().toString(), builder);
                     } catch (TelegramApiException | IOException e) {
                         System.err.println("Error loading the img received");
                         e.printStackTrace();
@@ -167,13 +167,13 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
                     VideoNote video = telegramMessage.getVideoNote();
 
                     try {
-                        Pair<byte[], String> data = downloadFromFileId(video.getFileId());
+                        Pair<byte[], String> data = this.downloadFromFileId(video.getFileId());
 
                         String text = msg.getCaption();
                         BotTextMessage textMessage = new BotTextMessage(message, text);
                         BotDocumentMessage docMessage = new BotDocumentMessage(textMessage, data.getValue1(),
                                 data.getValue0(), BotDocumentType.VIDEO);
-                        botsController.sendMessage(docMessage, chat.getId().toString(), builder);
+                        this.botsController.sendMessage(docMessage, chat.getId().toString(), builder);
                     } catch (TelegramApiException | IOException e) {
                         System.err.println("Error loading the video received");
                         e.printStackTrace();
@@ -185,13 +185,13 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
                     Video video = telegramMessage.getVideo();
 
                     try {
-                        Pair<byte[], String> data = downloadFromFileId(video.getFileId());
+                        Pair<byte[], String> data = this.downloadFromFileId(video.getFileId());
 
                         String text = msg.getCaption();
                         BotTextMessage textMessage = new BotTextMessage(message, text);
                         BotDocumentMessage docMessage = new BotDocumentMessage(textMessage, data.getValue1(),
                                 data.getValue0(), BotDocumentType.VIDEO);
-                        botsController.sendMessage(docMessage, chat.getId().toString(), builder);
+                        this.botsController.sendMessage(docMessage, chat.getId().toString(), builder);
                     } catch (TelegramApiException | IOException e) {
                         System.err.println("Error loading the video received");
                         e.printStackTrace();
@@ -206,7 +206,7 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
                             location.getLongitude()) + worldMap;
 
                     BotTextMessage textMessage = new BotTextMessage(message, text);
-                    botsController.sendMessage(textMessage, chat.getId().toString(), builder);
+                    this.botsController.sendMessage(textMessage, chat.getId().toString(), builder);
                 } else if (null != telegramMessage.getContact()) {
                     Contact contact = telegramMessage.getContact();
                     StringBuilder text = new StringBuilder();
@@ -224,7 +224,7 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
                     }
 
                     BotTextMessage textMessage = new BotTextMessage(message, text.toString());
-                    botsController.sendMessage(textMessage, chat.getId().toString(), builder);
+                    this.botsController.sendMessage(textMessage, chat.getId().toString(), builder);
                 }
 
                 // Send audio
@@ -232,13 +232,13 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
                     Audio audio = telegramMessage.getAudio();
 
                     try {
-                        Pair<byte[], String> data = downloadFromFileId(audio.getFileId());
+                        Pair<byte[], String> data = this.downloadFromFileId(audio.getFileId());
 
                         String text = msg.getCaption();
                         BotTextMessage textMessage = new BotTextMessage(message, text);
                         BotDocumentMessage docMessage = new BotDocumentMessage(textMessage, data.getValue1(),
                                 data.getValue0(), BotDocumentType.AUDIO);
-                        botsController.sendMessage(docMessage, chat.getId().toString(), builder);
+                        this.botsController.sendMessage(docMessage, chat.getId().toString(), builder);
                     } catch (TelegramApiException | IOException e) {
                         System.err.println("Error loading the audio received");
                         e.printStackTrace();
@@ -251,7 +251,7 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
 
                     String[] commandSplitted = text.split("\\\\s+");
                     if (text.startsWith("/users")) {
-                        List<Triplet<Bot, String, String[]>> users = botsController.askForUsers(chat.getId().toString());
+                        List<Triplet<Bot, String, String[]>> users = this.botsController.askForUsers(chat.getId().toString());
                         StringBuilder output = new StringBuilder();
                         users.forEach(channel -> {
                             output.append(channel.getValue0().getClass().getSimpleName())
@@ -270,21 +270,21 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
                                 .setChatId(chat.getId())
                                 .setText(output.toString());
                         try {
-                            sendMessage(messageToSend);
+                            this.sendMessage(messageToSend);
                         } catch (TelegramApiException e) {
                             System.err.println("Failed to send message from TelegramBot");
                             e.printStackTrace();
                         }
                     } else {
                         BotTextMessage textMessage = new BotTextMessage(message, text);
-                        botsController.sendMessage(textMessage, chat.getId().toString(), builder);
+                        this.botsController.sendMessage(textMessage, chat.getId().toString(), builder);
                     }
                 }
                 // Send sticker
                 else if (telegramMessage.getSticker() != null) {
                     Sticker sticker = telegramMessage.getSticker();
                     BotTextMessage textMessage = new BotTextMessage(message, sticker.getEmoji());
-                    botsController.sendMessage(textMessage, chat.getId().toString(), builder);
+                    this.botsController.sendMessage(textMessage, chat.getId().toString(), builder);
                 }
             }
         } else if (update.hasEditedMessage()) {
@@ -306,29 +306,29 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
             BotMessage bm = new BotMessage(authorNickname, channelFrom, this);
             BotTextMessage tm = new BotTextMessage(bm, text);
 
-            botsController.editMessage(tm, channelFrom, messageId);
+            this.botsController.editMessage(tm, channelFrom, messageId);
         }
     }
 
     @Override
     public String getBotUsername() {
-        if (configs.containsKey(USERNAME_KEY))
-            return configs.get(USERNAME_KEY);
+        if (this.configs.containsKey(TelegramBot.USERNAME_KEY))
+            return this.configs.get(TelegramBot.USERNAME_KEY);
         else
             return null;
     }
 
     @Override
     public String getBotToken() {
-        if (configs.containsKey(TOKEN_KEY))
-            return configs.get(TOKEN_KEY);
+        if (this.configs.containsKey(TelegramBot.TOKEN_KEY))
+            return this.configs.get(TelegramBot.TOKEN_KEY);
         else
             return null;
     }
 
     @Override
     public void addBridge(Bot bot, String channelTo, String channelFrom) {
-        botsController.addBridge(bot, channelTo, channelFrom);
+        this.botsController.addBridge(bot, channelTo, channelFrom);
     }
 
     @Override
@@ -339,7 +339,7 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
                         msg.getBotFrom().getId(), msg.getChannelFrom(),
                         msg.getNicknameFrom(), Optional.ofNullable(msg.getText())));
         try {
-            Message sentMessage = sendMessage(message);
+            Message sentMessage = this.sendMessage(message);
             return Optional.ofNullable(sentMessage.getMessageId().toString());
         } catch (TelegramApiException e) {
             System.err.println(String.format("Failed to send message from %s to TelegramBot", msg.getBotFrom().getId()));
@@ -350,28 +350,36 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
 
     @Override
     public Optional<String> sendMessage(BotDocumentMessage msg, String channelTo) {
-        SendDocument message = new SendDocument()
-                .setChatId(channelTo);
-        message.setCaption(BotsController.messageFormatter(
+        String caption = BotsController.messageFormatter(
                 msg.getBotFrom().getId(), msg.getChannelFrom(),
-                msg.getNicknameFrom(), Optional.ofNullable(msg.getText())));
+                msg.getNicknameFrom(), Optional.ofNullable(msg.getText()));
 
-        InputStream docStream = new ByteArrayInputStream(msg.getDoc());
-        message.setNewDocument("doc." + msg.getFileExtension(), docStream);
-        try {
-            docStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            Message sentMessage = sendDocument(message);
+        try (InputStream docStream = new ByteArrayInputStream(msg.getDoc())) {
+            Message sentMessage;
+            switch (msg.getDocumentType()) {
+                default:
+                    sentMessage = this.sendDocument(caption, channelTo,
+                            docStream, msg.getFileExtension());
+            }
             return Optional.ofNullable(sentMessage.getMessageId().toString());
-        } catch (TelegramApiException e) {
-            System.err.println(String.format("Failed to send message from %s to TelegramBot", msg.getBotFrom().getId()));
+        } catch (IOException | TelegramApiException e) {
+            // IOException should never happens
             e.printStackTrace();
+            System.err.println(String.format("Failed to send message from %s to TelegramBot",
+                    msg.getBotFrom().getId()));
             return Optional.empty();
         }
+    }
+
+    private Message sendDocument(String caption, String channelTo, InputStream docStream,
+                                 String fileExtension)
+            throws TelegramApiException {
+        SendDocument message = new SendDocument()
+                .setChatId(channelTo);
+        message.setCaption(caption);
+
+        message.setNewDocument("doc." + fileExtension, docStream);
+        return this.sendDocument(message);
     }
 
     @Override
@@ -386,7 +394,7 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
         text.setText(messageText);
 
         try {
-            this.editMessageText(text);
+            editMessageText(text);
         } catch (TelegramApiException e) {
             System.out.println(e.getMessage());
 
@@ -396,7 +404,7 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
             caption.setCaption(messageText);
 
             try {
-                editMessageCaption(caption);
+                this.editMessageCaption(caption);
             } catch (TelegramApiException e1) {
                 System.err.println("Error while changing img caption");
                 e1.printStackTrace();
@@ -406,16 +414,16 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
 
     @Override
     public String[] getUsers(String channel) {
-        return users.toArray(new String[users.size()]);
+        return this.users.toArray(new String[this.users.size()]);
     }
 
     @Override
     public String getId() {
-        return this.botId;
+        return botId;
     }
 
     @Override
     public String channelIdToName(String channelId) {
-        return this.chats.get(Long.parseLong(channelId));
+        return chats.get(Long.parseLong(channelId));
     }
 }
