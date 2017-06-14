@@ -1,6 +1,5 @@
 package messages;
 
-// TODO: insert an enum to indicate the type of document
 public class BotDocumentMessage extends BotTextMessage {
     private final byte[] doc;
     private final String fileExtension;
@@ -15,14 +14,14 @@ public class BotDocumentMessage extends BotTextMessage {
     }
 
     public String getFileExtension() {
-        return fileExtension;
+        return this.fileExtension;
     }
 
     public byte[] getDoc() {
-        return doc;
+        return this.doc;
     }
 
     public BotDocumentType getDocumentType() {
-        return type;
+        return this.type;
     }
 }
