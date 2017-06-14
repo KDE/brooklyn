@@ -10,6 +10,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.Map.Entry;
 
 public final class Application {
     private static Connection database;
@@ -29,21 +30,22 @@ public final class Application {
 
         Map<String, Object> channelsConfig = conf.getChannels();
 
-        initDatabase(conf.getDbUri());
+        Application.initDatabase(conf.getDbUri());
 
         Map<String, String> webserverConfig = conf.getWebserverConfig();
         FileStorage.init(webserverConfig);
 
-        Map<String, Bot> bots = Application.initBots(conf.getBots(), channelsConfig, webserverConfig);
-        Application.manageBridges(bots, channelsConfig, conf.getBridges());
+        Map<String, Bot> bots = initBots(conf.getBots(), channelsConfig, webserverConfig);
+        manageBridges(bots, channelsConfig, conf.getBridges());
 
-        Application.handleShutdown();
+        handleShutdown();
     }
 
+    // TODO: move this into a model
     private static void initDatabase(String dbUri) {
         try {
-            database = DriverManager.getConnection(dbUri);
-            MessagesModel.init(database);
+            Application.database = DriverManager.getConnection(dbUri);
+            MessagesModel.init(Application.database);
         } catch (SQLException e) {
             System.err.println("Error loading the database");
             e.printStackTrace();
@@ -61,7 +63,7 @@ public final class Application {
                 Object newClass = Class.forName(Bot.class.getPackage().getName() + '.' + botConfig.get(Config.BOT_TYPE_KEY)).newInstance();
                 if (newClass instanceof Bot) {
                     Bot bot = (Bot) newClass;
-                    String[] channels = getChannelsName(entry.getKey(), channelsConfig);
+                    String[] channels = Application.getChannelsName(entry.getKey(), channelsConfig);
                     if (bot.init(entry.getKey(), botConfig, channels)) {
                         bots.put(entry.getKey(), bot);
                         System.out.println(String.format("Bot '%s' initialized.", entry.getKey()));
@@ -97,11 +99,11 @@ public final class Application {
                                       ArrayList<ArrayList<String>> bridgesConfig) {
         bridgesConfig.forEach(bridgeConfig -> {
             bridgeConfig.forEach(fromChannelId -> {
-                Optional<String> fromBotId = channelToBotId(fromChannelId, channelsConfig);
+                Optional<String> fromBotId = Application.channelToBotId(fromChannelId, channelsConfig);
                 if (fromBotId.isPresent()) {
                     Bot fromBot = bots.get(fromBotId.get());
                     bridgeConfig.forEach(toChannelId -> {
-                        Optional<String> toBotId = channelToBotId(toChannelId, channelsConfig);
+                        Optional<String> toBotId = Application.channelToBotId(toChannelId, channelsConfig);
                         if (toBotId.isPresent()) {
                             Bot toBot = bots.get(toBotId.get());
                             Map<String, String> toChannelConfig = (Map<String, String>) channelsConfig.get(toChannelId);
@@ -118,7 +120,7 @@ public final class Application {
 
     private static Optional<String> channelToBotId(String channelId,
                                                    Map<String, Object> channelsConfig) {
-        for (Map.Entry<String, Object> entry : channelsConfig.entrySet()) {
+        for (Entry<String, Object> entry : channelsConfig.entrySet()) {
             if (entry.getKey().equals(channelId)) {
                 Map<String, String> channelConfig = (Map<String, String>) entry.getValue();
                 return Optional.ofNullable(channelConfig.get(Config.BOT_KEY));
@@ -132,7 +134,7 @@ public final class Application {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
                 MessagesModel.clean();
-                database.close();
+                Application.database.close();
             } catch (SQLException e) {
                 e.printStackTrace();
             }
