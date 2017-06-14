@@ -27,6 +27,7 @@ public class FileStorage {
         try {
             digest = MessageDigest.getInstance("SHA-256");
         } catch (NoSuchAlgorithmException e) {
+            // Should never happens
             e.printStackTrace();
         }
 
@@ -35,7 +36,7 @@ public class FileStorage {
                 .replace(File.separator, ""); // It prevents to create useless directories
 
         String filename = encoded + '.' + fileExtension;
-        String contentFolder = webserverConfig.get("content-folder");
+        String contentFolder = FileStorage.webserverConfig.get("content-folder");
 
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
         Date date = new Date();
@@ -55,22 +56,14 @@ public class FileStorage {
 
         File file = new File(baseLocalPath + File.separator + filename);
         if (!file.exists()) {
-            FileOutputStream fos = null;
-            try {
-                fos = new FileOutputStream(file);
+            try (FileOutputStream fos = new FileOutputStream(file)) {
+                fos.write(data);
             } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-
-            fos.write(data);
-            try {
-                fos.close();
-            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
 
-        URIBuilder builder = new URIBuilder(webserverConfig.get("base-url"));
+        URIBuilder builder = new URIBuilder(FileStorage.webserverConfig.get("base-url"));
         builder.setPath(dateFormat.format(date) + '/' + filename);
         return builder.toString();
     }
