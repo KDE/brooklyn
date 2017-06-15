@@ -11,6 +11,7 @@ import org.javatuples.Triplet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -70,7 +71,7 @@ public class BotsController {
 
                     if (optionalBuilder.isPresent()) {
                         optionalBuilder.get().append(sendTo.getValue0().getId(),
-                                sendTo.getValue1(), msgId.orElse("-1"));
+                                sendTo.getValue1(), msgId.orElse(UUID.randomUUID().toString()));
                     }
                 });
 

@@ -14,7 +14,7 @@ public class MessagesModel {
                 + "	id integer PRIMARY KEY AUTOINCREMENT,\n"
                 + "	bot varchar(255) NOT NULL,\n"
                 + "	channel varchar(255) NOT NULL,\n"
-                + "	message varchar(255) NOT NULL,\n"
+                + "	message varchar(36) NOT NULL,\n"
                 + " CONSTRAINT UC_message UNIQUE (bot,channel,message)"
                 + ");";
 
