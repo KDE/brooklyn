@@ -33,13 +33,13 @@ public class BotsController {
     }
 
     public void addBridge(Bot bot, String channelTo, String channelFrom) {
-        this.sendToList.add(Triplet.with(bot, channelTo, channelFrom));
+        sendToList.add(Triplet.with(bot, channelTo, channelFrom));
     }
 
     public void editMessage(BotTextMessage messageText, String channelFrom, String messageId) {
         // TODO: fix this bug
-        this.sendToList.stream()
-                .filter(sendTo -> sendTo.getValue2().equals(channelFrom) || channelFrom.equals(BotsController.EVERY_CHANNEL))
+        sendToList.stream()
+                .filter(sendTo -> sendTo.getValue2().equals(channelFrom) || channelFrom.equals(EVERY_CHANNEL))
                 .forEach(sendTo -> {
                     Optional<String> message = MessagesModel.getChildMessage(messageText.getBotFrom().getId(),
                             messageText.getChannelFrom(), messageId,
@@ -52,11 +52,20 @@ public class BotsController {
 
     public void sendMessage(BotMessage message, String channelFrom,
                             Optional<MessageBuilder> optionalBuilder) {
-        this.sendToList.stream()
-                .filter(sendTo -> sendTo.getValue2().equals(channelFrom) || channelFrom.equals(BotsController.EVERY_CHANNEL))
+        sendToList.stream()
+                .filter(sendTo -> sendTo.getValue2().equals(channelFrom) || channelFrom.equals(EVERY_CHANNEL))
                 .forEach(sendTo -> {
-                    Optional<String> msgId = sendTo.getValue0().sendMessage(
-                            (BotDocumentMessage) message, sendTo.getValue1());
+                    Optional<String> msgId;
+                    if (message instanceof BotDocumentMessage)
+                        msgId = sendTo.getValue0().sendMessage(
+                                (BotDocumentMessage) message, sendTo.getValue1());
+                    else if (message instanceof BotTextMessage)
+                        msgId = sendTo.getValue0().sendMessage(
+                                (BotTextMessage) message, sendTo.getValue1());
+                    else {
+                        System.err.println("Error, message type not valid.");
+                        return;
+                    }
 
                     if (optionalBuilder.isPresent()) {
                         optionalBuilder.get().append(sendTo.getValue0().getId(),
@@ -72,7 +81,7 @@ public class BotsController {
      * @return a list of {@literal Triplet<Bot bot, String channel, List<String> nicknames>}
      */
     public List<Triplet<Bot, String, List<String>>> askForUsers(String channelFrom) {
-        return this.sendToList.stream()
+        return sendToList.stream()
                 .filter(askTo -> askTo.getValue2().equals(channelFrom))
                 .map(askTo -> new Triplet<>(askTo.getValue0(), askTo.getValue1(),
                                 askTo.getValue0().getUsers(askTo.getValue1())))
