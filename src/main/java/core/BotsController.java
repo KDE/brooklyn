@@ -14,9 +14,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/**
- * Created by davide on 12/06/17.
- */
 public class BotsController {
     public static final String EVERY_CHANNEL = "*";
 
@@ -36,13 +33,13 @@ public class BotsController {
     }
 
     public void addBridge(Bot bot, String channelTo, String channelFrom) {
-        this.sendToList.add(Triplet.with(bot, channelTo, channelFrom));
+        sendToList.add(Triplet.with(bot, channelTo, channelFrom));
     }
 
     public void editMessage(BotTextMessage messageText, String channelFrom, String messageId) {
         // TODO: fix this bug
-        this.sendToList.stream()
-                .filter(sendTo -> sendTo.getValue2().equals(channelFrom) || channelFrom.equals(BotsController.EVERY_CHANNEL))
+        sendToList.stream()
+                .filter(sendTo -> sendTo.getValue2().equals(channelFrom) || channelFrom.equals(EVERY_CHANNEL))
                 .forEach(sendTo -> {
                     Optional<String> message = MessagesModel.getChildMessage(messageText.getBotFrom().getId(),
                             messageText.getChannelFrom(), messageId,
@@ -55,8 +52,8 @@ public class BotsController {
 
     public void sendMessage(BotMessage message, String channelFrom,
                             Optional<MessageBuilder> optionalBuilder) {
-        this.sendToList.stream()
-                .filter(sendTo -> sendTo.getValue2().equals(channelFrom) || channelFrom.equals(BotsController.EVERY_CHANNEL))
+        sendToList.stream()
+                .filter(sendTo -> sendTo.getValue2().equals(channelFrom) || channelFrom.equals(EVERY_CHANNEL))
                 .forEach(sendTo -> {
                     Optional<String> msgId = sendTo.getValue0().sendMessage(
                             (BotDocumentMessage) message, sendTo.getValue1());
@@ -75,7 +72,7 @@ public class BotsController {
      * @return a list of {@literal Triplet<Bot bot, String channel, List<String> nicknames>}
      */
     public List<Triplet<Bot, String, List<String>>> askForUsers(String channelFrom) {
-        List<Triplet<Bot, String, List<String>>> output = this.sendToList.stream()
+        List<Triplet<Bot, String, List<String>>> output = sendToList.stream()
                 .filter(askTo -> askTo.getValue2().equals(channelFrom))
                 .map(askTo -> new Triplet<>(askTo.getValue0(), askTo.getValue1(),
                                 askTo.getValue0().getUsers(askTo.getValue1())))
