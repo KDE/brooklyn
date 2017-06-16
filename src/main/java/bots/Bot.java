@@ -3,6 +3,7 @@ package bots;
 import messages.BotDocumentMessage;
 import messages.BotTextMessage;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -17,7 +18,7 @@ public interface Bot {
 
     void editMessage(BotTextMessage msg, String channelTo, String messageId);
 
-    String[] getUsers(String channel);
+    List<String> getUsers(String channel);
 
     String getId();
 
