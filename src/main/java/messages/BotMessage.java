@@ -3,6 +3,8 @@ package messages;
 import bots.Bot;
 
 public class BotMessage {
+    public static final String LICENSE_MESSAGE = "Brooklyn is released under the ";
+
     private final String nicknameFrom;
     private final String channelFrom;
     private final Bot botFrom;
@@ -14,14 +16,14 @@ public class BotMessage {
     }
 
     public String getNicknameFrom() {
-        return nicknameFrom;
+        return this.nicknameFrom;
     }
 
     public String getChannelFrom() {
-        return channelFrom;
+        return this.channelFrom;
     }
 
     public Bot getBotFrom() {
-        return botFrom;
+        return this.botFrom;
     }
 }
