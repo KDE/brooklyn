@@ -3,7 +3,10 @@ package messages;
 import bots.Bot;
 
 public class BotMessage {
-    public static final String LICENSE_MESSAGE = "Brooklyn is released under the ";
+    public static final String LICENSE_MESSAGE =
+            "This software is released under the GNU AGPL license."
+                    + System.lineSeparator()
+                    + "https://phabricator.kde.org/source/brooklyn/";
 
     private final String nicknameFrom;
     private final String channelFrom;
@@ -16,14 +19,14 @@ public class BotMessage {
     }
 
     public String getNicknameFrom() {
-        return this.nicknameFrom;
+        return nicknameFrom;
     }
 
     public String getChannelFrom() {
-        return this.channelFrom;
+        return channelFrom;
     }
 
     public Bot getBotFrom() {
-        return this.botFrom;
+        return botFrom;
     }
 }
