@@ -8,6 +8,6 @@ public class OpenStreetMap extends Map {
     @Override
     public String toUrl() {
         return String.format("https://www.openstreetmap.org/?mlat=%s&&mlon=%s",
-                this.latitude, this.longitude);
+                latitude, longitude);
     }
 }

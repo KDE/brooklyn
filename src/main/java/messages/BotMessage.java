@@ -14,14 +14,14 @@ public class BotMessage {
     }
 
     public String getNicknameFrom() {
-        return this.nicknameFrom;
+        return nicknameFrom;
     }
 
     public String getChannelFrom() {
-        return this.channelFrom;
+        return channelFrom;
     }
 
     public Bot getBotFrom() {
-        return this.botFrom;
+        return botFrom;
     }
 }

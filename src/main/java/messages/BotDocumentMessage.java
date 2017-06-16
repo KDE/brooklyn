@@ -17,18 +17,18 @@ public class BotDocumentMessage extends BotTextMessage {
     }
 
     public String getFileExtension() {
-        return fileExtension;
+        return this.fileExtension;
     }
 
     public byte[] getDoc() {
-        return doc;
+        return this.doc;
     }
 
     public String getFilename() {
-        return filename;
+        return this.filename;
     }
 
     public BotDocumentType getDocumentType() {
-        return type;
+        return this.type;
     }
 }

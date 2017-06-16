@@ -36,7 +36,7 @@ public class FileStorage {
                 .replace(File.separator, ""); // It prevents to create useless directories
 
         String filename = encoded + '.' + fileExtension;
-        String contentFolder = FileStorage.webserverConfig.get("content-folder");
+        String contentFolder = webserverConfig.get("content-folder");
 
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
         Date date = new Date();
@@ -63,7 +63,7 @@ public class FileStorage {
             }
         }
 
-        URIBuilder builder = new URIBuilder(FileStorage.webserverConfig.get("base-url"));
+        URIBuilder builder = new URIBuilder(webserverConfig.get("base-url"));
         builder.setPath(dateFormat.format(date) + '/' + filename);
         return builder.toString();
     }

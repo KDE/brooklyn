@@ -9,6 +9,6 @@ public class BotTextMessage extends BotMessage {
     }
 
     public String getText() {
-        return this.text;
+        return text;
     }
 }
