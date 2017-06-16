@@ -24,16 +24,16 @@ public class MessagesModel {
                 + "PRIMARY KEY(fromId, toId)"
                 + ");";
 
-        Statement createTables = database.createStatement();
-        createTables.execute(messageTableSql);
-        createTables.execute(bridgeTableSql);
-        createTables.close();
+        try (Statement createTables = database.createStatement()) {
+            createTables.execute(messageTableSql);
+            createTables.execute(bridgeTableSql);
+        }
     }
 
     public static void clean() {
         String deleteBridge = "DROP TABLE bridge;";
         String deleteMessages = "DROP TABLE messages;";
-        try (Statement createTables = database.createStatement()) {
+        try (Statement createTables = MessagesModel.database.createStatement()) {
             createTables.execute(deleteBridge);
             createTables.execute(deleteMessages);
         } catch (SQLException e) {
@@ -51,17 +51,17 @@ public class MessagesModel {
                 + "LIMIT 1;";
 
         Optional<String> output = Optional.empty();
-        try (final PreparedStatement pstmt = database.prepareStatement(query)) {
+        try (final PreparedStatement pstmt = MessagesModel.database.prepareStatement(query)) {
             pstmt.setString(1, botIdFrom);
             pstmt.setString(2, channelIdFrom);
             pstmt.setString(3, messageIdFrom);
             pstmt.setString(4, botIdTo);
             pstmt.setString(5, channelIdTo);
 
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next())
-                output = Optional.ofNullable(rs.getString("message"));
-            rs.close();
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next())
+                    output = Optional.ofNullable(rs.getString("message"));
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
