@@ -33,7 +33,7 @@ public class MessagesModel {
     public static void clean() {
         String deleteBridge = "DROP TABLE bridge;";
         String deleteMessages = "DROP TABLE messages;";
-        try (Statement createTables = MessagesModel.database.createStatement()) {
+        try (Statement createTables = database.createStatement()) {
             createTables.execute(deleteBridge);
             createTables.execute(deleteMessages);
         } catch (SQLException e) {
@@ -51,7 +51,7 @@ public class MessagesModel {
                 + "LIMIT 1;";
 
         Optional<String> output = Optional.empty();
-        try (final PreparedStatement pstmt = MessagesModel.database.prepareStatement(query)) {
+        try (final PreparedStatement pstmt = database.prepareStatement(query)) {
             pstmt.setString(1, botIdFrom);
             pstmt.setString(2, channelIdFrom);
             pstmt.setString(3, messageIdFrom);
