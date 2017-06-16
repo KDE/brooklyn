@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
 class Config {
     public static final String DEFAULT_FILENAME = "/etc/brooklyn/conf.yml";
@@ -31,19 +30,19 @@ class Config {
     private String dbUri = "";
 
     public Config(String configFileName) {
-        this.bots = new LinkedHashMap<>(0);
-        this.channels = new LinkedHashMap<>(0);
-        this.bridges = new ArrayList(0);
+        bots = new LinkedHashMap<>(0);
+        channels = new LinkedHashMap<>(0);
+        bridges = new ArrayList(0);
 
-        this.fileName = configFileName;
+        fileName = configFileName;
     }
 
     private static boolean isValidBots(Map<String, Object> bots) {
         for (Object obj : bots.entrySet()) {
-            if (!(obj instanceof Entry))
+            if (!(obj instanceof Map.Entry))
                 return false;
 
-            Entry<String, Object> bot = (Entry<String, Object>) obj;
+            Map.Entry<String, Object> bot = (Map.Entry<String, Object>) obj;
             if (!(bot.getValue() instanceof Map))
                 return false;
 
@@ -59,7 +58,7 @@ class Config {
         for (Object obj : bridges) {
             if (!(obj instanceof ArrayList)) {
                 ArrayList<String> bridge = (ArrayList<String>) obj;
-                for (Object channel : bridges) {
+                for (Object channel : bridge) {
                     if (!channels.containsKey(channel))
                         return false;
                 }
@@ -154,22 +153,22 @@ class Config {
 
     private boolean isValidChannels(Map<String, Object> channels, Map<String, Object> bots) {
         for (Object obj : channels.entrySet()) {
-            if (!(obj instanceof Entry))
+            if (!(obj instanceof Map.Entry))
                 return false;
 
-            Entry<String, Object> channel = (Entry<String, Object>) obj;
+            Map.Entry<String, Object> channel = (Map.Entry<String, Object>) obj;
             if (!(channel.getValue() instanceof Map))
                 return false;
 
             Map<String, String> value = (Map<String, String>) channel.getValue();
-            if (!value.containsKey(Config.BOT_KEY))
+            if (!value.containsKey(BOT_KEY))
                 return false;
 
-            String bot = value.get(Config.BOT_KEY);
+            String bot = value.get(BOT_KEY);
             if (!bots.containsKey(bot))
                 return false;
 
-            if (!value.containsKey(Config.NAME_KEY))
+            if (!value.containsKey(NAME_KEY))
                 return false;
         }
 
