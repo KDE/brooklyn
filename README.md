@@ -18,6 +18,21 @@ The application needs a config file.
 
 The default path is `/etc/brooklyn/conf.yml` but you can define a custom path, passing it as a first parameter (e.g. `java -jar brooklyn.jar /new/path`).
 
+### Telegram bot
+
+Due to [Telegram APIs limit](https://core.telegram.org/bots/faq#broadcasting-to-users)
+you should create one bot for each telegram-related channel.
+
+Remember to add the bot on each group you want to manage before adding it in your config file.
+
+### Rocket.Chat bot
+
+Use secure websocket (wss) instead of ws to connect the bot to a server,
+because login passwords are sent in plain text.
+
+Remember to add the bot on each channel you want to manage before adding it in your config file.
+
+
 ### conf.yml
 
 This is a self-explanatory example of the configuration file.
