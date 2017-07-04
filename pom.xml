@@ -29,6 +29,11 @@
             <version>3.1.0</version>
         </dependency>
         <dependency>
+            <groupId>org.kde.brooklyn</groupId>
+            <artifactId>canaveral</artifactId>
+            <version>0.1</version>
+        </dependency>
+        <dependency>
             <groupId>org.javatuples</groupId>
             <artifactId>javatuples</artifactId>
             <version>1.2</version>
