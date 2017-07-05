@@ -20,22 +20,67 @@ package bots;
 import core.BotsController;
 import messages.BotDocumentMessage;
 import messages.BotTextMessage;
+import org.kde.brooklyn.RocketChatException;
+import org.kde.brooklyn.RocketChatMessage;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 public class RocketChatBot implements Bot {
+    private static final String USERNAME_KEY = "username";
+    private static final String HOST_KEY = "host";
+    private static final String PASSWORD_KEY = "password";
+
     private final BotsController botsController = new BotsController();
+    private org.kde.brooklyn.RocketChatBot bot;
 
     private String botId;
 
     @Override
-    public boolean init(String botId, Map<String, String> configs, String[] channels) {
+    public boolean init(final String botId, final Map<String, String> configs,
+                        final String[] channels) {
         this.botId = botId;
 
-        return false;
+        if (!configs.containsKey(HOST_KEY) ||
+                !configs.containsKey(USERNAME_KEY) ||
+                !configs.containsKey(PASSWORD_KEY))
+            return false;
+
+        final URI serverUri;
+        try {
+            serverUri = new URI(configs.get(HOST_KEY));
+        } catch (URISyntaxException e) {
+            return false;
+        }
+        final String username = configs.get(USERNAME_KEY);
+        final String password = configs.get(PASSWORD_KEY);
+
+        try {
+            this.bot = new org.kde.brooklyn.RocketChatBot(serverUri, username, password) {
+                @Override
+                protected void onMessageReceived(RocketChatMessage message) {
+
+                }
+
+                @Override
+                protected void onMessageEdited(RocketChatMessage message) {
+
+                }
+            };
+        } catch (RocketChatException e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        for (String channel : channels) {
+            bot.addRoom(channel);
+        }
+
+        return true;
     }
 
     @Override

@@ -48,6 +48,10 @@ bots:
     username: "skynet"
     password: "123456" # Optional
     host: "url.of.the.host.com"
+ rbot:
+    host: "wss://chat.wikitolearn.org"
+    username: "username"
+    password: "password"
 channels:
   ch1:
     bot: ibot
