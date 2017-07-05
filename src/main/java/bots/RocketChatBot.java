@@ -105,7 +105,7 @@ public class RocketChatBot implements Bot {
 
     @Override
     public void editMessage(BotTextMessage msg, String channelTo, String messageId) {
-
+        bot.updateMessage(msg.getText(), messageId, channelTo);
     }
 
     @Override
