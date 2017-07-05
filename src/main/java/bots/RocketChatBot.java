@@ -63,12 +63,12 @@ public class RocketChatBot implements Bot {
             this.bot = new org.kde.brooklyn.RocketChatBot(serverUri, username, password) {
                 @Override
                 protected void onMessageReceived(RocketChatMessage message) {
-
+                    RocketChatBot.this.onMessageReceived(message);
                 }
 
                 @Override
                 protected void onMessageEdited(RocketChatMessage message) {
-
+                    onMessageEdited(message);
                 }
             };
         } catch (RocketChatException e) {
@@ -88,6 +88,14 @@ public class RocketChatBot implements Bot {
         botsController.addBridge(bot, channelTo, channelFrom);
     }
 
+    private void onMessageReceived(RocketChatMessage message) {
+        // TODO: implement this
+    }
+
+    private void onMessageEdited(RocketChatMessage message) {
+        // TODO: implement this
+    }
+
     @Override
     public Optional<String> sendMessage(BotTextMessage msg, String channelTo) {
         final String alias = BotsController.messageFormatter(msg.getBotFrom().getId(),
@@ -99,7 +107,7 @@ public class RocketChatBot implements Bot {
 
     @Override
     public Optional<String> sendMessage(BotDocumentMessage msg, String channelTo) {
-        // TODO: implement that
+        // TODO: implement this
         return Optional.empty();
     }
 
@@ -110,7 +118,7 @@ public class RocketChatBot implements Bot {
 
     @Override
     public List<String> getUsers(String channel) {
-        // TODO: implement that
+        // TODO: implement this
         return new ArrayList<>(0);
     }
 
@@ -121,7 +129,7 @@ public class RocketChatBot implements Bot {
 
     @Override
     public String channelIdToName(String channelId) {
-        // TODO: implement that
+        // TODO: implement this
         return channelId;
     }
 }
