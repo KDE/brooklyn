@@ -19,7 +19,9 @@ package bots;
 
 import core.BotsController;
 import messages.BotDocumentMessage;
+import messages.BotMessage;
 import messages.BotTextMessage;
+import models.MessageBuilder;
 import org.kde.brooklyn.RocketChatException;
 import org.kde.brooklyn.RocketChatMessage;
 
@@ -89,11 +91,21 @@ public class RocketChatBot implements Bot {
     }
 
     private void onMessageReceived(RocketChatMessage message) {
-        // TODO: implement this
+        final Optional<MessageBuilder> messageBuilder = Optional.of(new MessageBuilder(getId(),
+                message.roomId, message.id));
+
+        final BotMessage botMessage = new BotMessage(message.username, message.roomId, this);
+        final BotTextMessage botTextMessage = new BotTextMessage(botMessage, message.msg);
+
+        botsController.sendMessage(botTextMessage, message.roomId, messageBuilder);
+
     }
 
     private void onMessageEdited(RocketChatMessage message) {
-        // TODO: implement this
+        final BotMessage botMessage = new BotMessage(message.username, message.roomId, this);
+        final BotTextMessage botTextMessage = new BotTextMessage(botMessage, message.msg);
+
+        botsController.editMessage(botTextMessage, message.roomId, message.id);
     }
 
     @Override
