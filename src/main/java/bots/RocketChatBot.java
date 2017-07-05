@@ -90,17 +90,17 @@ public class RocketChatBot implements Bot {
 
     @Override
     public Optional<String> sendMessage(BotTextMessage msg, String channelTo) {
-        // TODO: implement that
-        return Optional.empty();
-    }
-
-    @Override
-    public Optional<String> sendMessage(BotDocumentMessage msg, String channelTo) {
         final String alias = BotsController.messageFormatter(msg.getBotFrom().getId(),
                 msg.getChannelFrom(), msg.getNicknameFrom(), Optional.empty());
 
         final String msgId = bot.sendMessage(msg.getText(), channelTo, Optional.of(alias));
         return Optional.of(msgId);
+    }
+
+    @Override
+    public Optional<String> sendMessage(BotDocumentMessage msg, String channelTo) {
+        // TODO: implement that
+        return Optional.empty();
     }
 
     @Override
