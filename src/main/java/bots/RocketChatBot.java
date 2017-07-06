@@ -36,6 +36,7 @@ public class RocketChatBot implements Bot {
     private static final String USERNAME_KEY = "username";
     private static final String HOST_KEY = "host";
     private static final String PASSWORD_KEY = "password";
+    private static final long WAIT_BEFORE_LOGIN = 2000;
 
     private final BotsController botsController = new BotsController();
     private org.kde.brooklyn.RocketChatBot bot;
@@ -77,6 +78,15 @@ public class RocketChatBot implements Bot {
             e.printStackTrace();
             return false;
         }
+
+        try {
+            Thread.sleep(WAIT_BEFORE_LOGIN);
+        } catch (InterruptedException e) {
+            // It should never, ever happens
+            e.printStackTrace();
+        }
+        if (!bot.isLogged())
+            return false;
 
         for (String channel : channels) {
             bot.addRoom(channel);
