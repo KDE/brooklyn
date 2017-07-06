@@ -71,7 +71,7 @@ public class RocketChatBot implements Bot {
 
                 @Override
                 protected void onMessageEdited(RocketChatMessage message) {
-                    onMessageEdited(message);
+                    RocketChatBot.this.onMessageEdited(message);
                 }
             };
         } catch (RocketChatException e) {
