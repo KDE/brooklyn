@@ -66,12 +66,14 @@ public class RocketChatBot implements Bot {
             this.bot = new org.kde.brooklyn.RocketChatBot(serverUri, username, password) {
                 @Override
                 protected void onMessageReceived(RocketChatMessage message) {
-                    RocketChatBot.this.onMessageReceived(message);
+                    if (!username.equals(message.username))
+                        RocketChatBot.this.onMessageReceived(message);
                 }
 
                 @Override
                 protected void onMessageEdited(RocketChatMessage message) {
-                    RocketChatBot.this.onMessageEdited(message);
+                    if (!username.equals(message.username))
+                        RocketChatBot.this.onMessageEdited(message);
                 }
             };
         } catch (RocketChatException e) {
