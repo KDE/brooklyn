@@ -130,7 +130,7 @@ public final class IrcBot implements Bot {
         } else {
             BotMessage msg = new BotMessage(authorNickname, channelFrom, this);
             BotTextMessage textMessage = new BotTextMessage(msg, text);
-            // An empty msg builder is passed. There aren't reasons to store IRC messages
+            // An empty msgId is passed. There aren't reasons to store IRC messages
             botsController.sendMessage(textMessage, channelFrom, Optional.empty());
         }
     }
@@ -164,7 +164,7 @@ public final class IrcBot implements Bot {
             BotMessage msg = new BotMessage(authorNickname, channelFromName, this);
             BotTextMessage textMessage = new BotTextMessage(msg, message);
 
-            // A new, useless msg builder is passed. There aren't reasons to store IRC messages
+            // A new, useless msgId is passed. There aren't reasons to store IRC messages
             botsController.sendMessage(textMessage, channelFromName, Optional.empty());
         }
     }

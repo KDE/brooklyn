@@ -67,7 +67,15 @@ public class BotsController {
     }
 
     public void sendMessage(BotMessage message, String channelFrom,
-                            Optional<MessageBuilder> optionalBuilder) {
+                            Optional<String> messageId) {
+        final MessageBuilder mb;
+        if (messageId.isPresent())
+            mb = new MessageBuilder(message.getBotFrom().getId(), message.getChannelFrom(),
+                    messageId.get());
+        else
+            mb = null;
+
+
         this.sendToList.stream()
                 .filter(sendTo -> sendTo.getValue2().equals(channelFrom) || channelFrom.equals(BotsController.EVERY_CHANNEL))
                 .forEach(sendTo -> {
@@ -83,14 +91,14 @@ public class BotsController {
                         return;
                     }
 
-                    if (optionalBuilder.isPresent()) {
-                        optionalBuilder.get().append(sendTo.getValue0().getId(),
+                    if (messageId.isPresent()) {
+                        mb.append(sendTo.getValue0().getId(),
                                 sendTo.getValue1(), msgId.orElse(UUID.randomUUID().toString()));
                     }
                 });
 
-        if (optionalBuilder.isPresent())
-            optionalBuilder.get().saveHistory();
+        if (messageId.isPresent())
+            mb.saveHistory();
     }
 
     /**

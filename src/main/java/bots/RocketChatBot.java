@@ -21,7 +21,6 @@ import core.BotsController;
 import messages.BotDocumentMessage;
 import messages.BotMessage;
 import messages.BotTextMessage;
-import models.MessageBuilder;
 import org.kde.brooklyn.RocketChatException;
 import org.kde.brooklyn.RocketChatMessage;
 
@@ -103,13 +102,10 @@ public class RocketChatBot implements Bot {
     }
 
     private void onMessageReceived(RocketChatMessage message) {
-        final Optional<MessageBuilder> messageBuilder = Optional.of(new MessageBuilder(getId(),
-                message.roomId, message.id));
-
         final BotMessage botMessage = new BotMessage(message.username, message.roomId, this);
         final BotTextMessage botTextMessage = new BotTextMessage(botMessage, message.msg);
 
-        botsController.sendMessage(botTextMessage, message.roomId, messageBuilder);
+        botsController.sendMessage(botTextMessage, message.roomId, Optional.of(message.id));
 
     }
 
