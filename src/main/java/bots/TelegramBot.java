@@ -51,7 +51,7 @@ import java.util.regex.Pattern;
 */
 public final class TelegramBot extends TelegramLongPollingBot implements Bot {
     private static final String USERNAME_KEY = "username";
-    private static final String TOKEN_KEY = "token";
+    private static final String TOKEN_KEY = "password";
     private static final Pattern COMPILE = Pattern.compile("\\\\s+");
 
     private static TelegramBotsApi telegramBotsApi;

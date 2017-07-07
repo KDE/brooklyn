@@ -42,7 +42,7 @@ bots:
  tbot:
     type: TelegramBot
     username: "JhonBot"
-    token: "blablabla"
+    password: "blablabla" # The token key
  ibot:
     type: IrcBot
     username: "skynet"
