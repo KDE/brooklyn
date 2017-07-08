@@ -55,7 +55,7 @@ public final class Application {
         Map<String, Bot> bots = initBots(conf.getBots(), channelsConfig);
         manageBridges(bots, channelsConfig, conf.getBridges());
 
-        handleShutdown();
+        handleShutdown(bots);
     }
 
     private static void initDatabase(String dbUri) {
@@ -143,7 +143,7 @@ public final class Application {
         return Optional.empty();
     }
 
-    private static void handleShutdown() throws InterruptedException {
+    private static void handleShutdown(Map<String, Bot> bots) throws InterruptedException {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
                 MessagesModel.clean();
@@ -151,7 +151,18 @@ public final class Application {
             } catch (SQLException e) {
                 e.printStackTrace();
             }
-            System.out.println("core.Application terminated");
+
+            bots.entrySet().stream()
+                    .map(x -> x.getValue())
+                    .forEach(bot -> {
+                        try {
+                            bot.close();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    });
+
+            System.out.println("Application terminated");
         }));
 
         // Wait forever unless the process is killed
