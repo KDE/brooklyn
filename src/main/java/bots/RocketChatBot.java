@@ -152,4 +152,9 @@ public class RocketChatBot implements Bot {
         // TODO: implement this
         return channelId;
     }
+
+    @Override
+    public void close() throws Exception {
+        bot.close();
+    }
 }

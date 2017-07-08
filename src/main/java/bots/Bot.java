@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public interface Bot {
+public interface Bot extends AutoCloseable {
     boolean init(String botId, Map<String, String> configs, String[] channels);
 
     void addBridge(Bot bot, String channelTo, String channelFrom);

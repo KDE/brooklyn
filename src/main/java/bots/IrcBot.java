@@ -235,4 +235,9 @@ public final class IrcBot implements Bot {
     public String getId() {
         return botId;
     }
+
+    @Override
+    public void close() throws Exception {
+        client.shutdown();
+    }
 }
