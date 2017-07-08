@@ -240,8 +240,11 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
             long chatId = message.getChatId();
             final String messageId = message.getMessageId().toString();
 
-            User user = message.getFrom();
-            users.add(new Pair(Long.toString(chatId), user.getUserName()));
+            final User user = message.getFrom();
+            if (null != message.getLeftChatMember())
+                users.remove(new Pair(Long.toString(chatId), message.getLeftChatMember()));
+            else
+                users.add(new Pair(Long.toString(chatId), user.getUserName()));
 
             Chat chat = message.getChat();
             chats.put(chat.getId(), chat.getTitle());
