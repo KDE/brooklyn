@@ -148,7 +148,7 @@ public class RocketChatBot implements Bot {
     }
 
     @Override
-    public String channelIdToName(String channelId) {
+    public String getChannelName(String channelId) {
         // TODO: implement this
         return channelId;
     }

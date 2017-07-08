@@ -39,5 +39,7 @@ public interface Bot {
 
     String getId();
 
-    String channelIdToName(String channelId);
+    default String getChannelName(String channelId) {
+        return channelId;
+    }
 }

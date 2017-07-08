@@ -208,7 +208,7 @@ public final class IrcBot implements Bot {
 
     @Override
     public void editMessage(BotTextMessage msg, String channelTo, String messageId) {
-        String channelName = msg.getBotFrom().channelIdToName(msg.getChannelFrom());
+        String channelName = msg.getBotFrom().getChannelName(msg.getChannelFrom());
         String[] messagesWithoutNewline = COMPILE.split(msg.getText()); // IRC doesn't allow CR / LF
         for (String messageToken : messagesWithoutNewline) {
             client.sendMessage(channelTo, BotsController.messageFormatter(
@@ -234,11 +234,5 @@ public final class IrcBot implements Bot {
     @Override
     public String getId() {
         return botId;
-    }
-
-    @Override
-    public String channelIdToName(String channelId) {
-        // On IRC channelId and channelName are the same thing
-        return channelId;
     }
 }

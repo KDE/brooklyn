@@ -24,6 +24,7 @@ import messages.BotDocumentType;
 import messages.BotMessage;
 import messages.BotTextMessage;
 import org.apache.commons.io.IOUtils;
+import org.javatuples.Pair;
 import org.javatuples.Triplet;
 import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.TelegramBotsApi;
@@ -43,6 +44,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /* TODO: implement a way not to exceed bot messages limit
    Wait until this will be stable:
@@ -55,7 +57,7 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
 
     private static TelegramBotsApi telegramBotsApi;
     // You can't retrieve users list, so it'll store users who wrote at least one time here
-    private final HashSet<String> users = new LinkedHashSet<>();
+    private final HashSet<Pair<String, String>> users = new LinkedHashSet<>();
     private final Map<Long, String> chats = new HashMap<>();
     private final BotsController botsController = new BotsController();
     private Map<String, String> configs = new LinkedHashMap<>(0);
@@ -239,7 +241,7 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
             final String messageId = message.getMessageId().toString();
 
             User user = message.getFrom();
-            users.add(user.getUserName());
+            users.add(new Pair(Long.toString(chatId), user.getUserName()));
 
             Chat chat = message.getChat();
             chats.put(chat.getId(), chat.getTitle());
@@ -448,7 +450,7 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
 
     @Override
     public void editMessage(BotTextMessage msg, String channelTo, String messageId) {
-        String channelFromName = msg.getBotFrom().channelIdToName(msg.getChannelFrom());
+        String channelFromName = msg.getBotFrom().getChannelName(msg.getChannelFrom());
         String messageText = BotsController.messageFormatter(
                 msg.getBotFrom().getId(), channelFromName, msg.getNicknameFrom(),
                 Optional.ofNullable(msg.getText()));
@@ -479,7 +481,10 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
 
     @Override
     public List<String> getUsers(String channel) {
-        return new ArrayList(users);
+        return users.stream()
+                .filter(x -> x.getValue0().equals(channel))
+                .map(x -> x.getValue1())
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -488,7 +493,7 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
     }
 
     @Override
-    public String channelIdToName(String channelId) {
+    public String getChannelName(String channelId) {
         return this.chats.get(Long.parseLong(channelId));
     }
 }
