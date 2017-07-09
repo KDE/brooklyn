@@ -26,7 +26,6 @@ import org.kde.brooklyn.RocketChatMessage;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -64,6 +63,10 @@ public class RocketChatBot implements Bot {
         try {
             this.bot = new org.kde.brooklyn.RocketChatBot(serverUri, username, password) {
                 @Override
+                public void close() throws Exception {
+                }
+
+                @Override
                 protected void onMessageReceived(RocketChatMessage message) {
                     if (!username.equals(message.username))
                         RocketChatBot.this.onMessageReceived(message);
@@ -80,12 +83,6 @@ public class RocketChatBot implements Bot {
             return false;
         }
 
-        try {
-            Thread.sleep(WAIT_BEFORE_LOGIN);
-        } catch (InterruptedException e) {
-            // It should never, ever happens
-            e.printStackTrace();
-        }
         if (!bot.isLogged())
             return false;
 
@@ -138,8 +135,7 @@ public class RocketChatBot implements Bot {
 
     @Override
     public List<String> getUsers(String channel) {
-        // TODO: implement this
-        return new ArrayList<>(0);
+        return bot.getUsers(channel);
     }
 
     @Override
@@ -149,8 +145,7 @@ public class RocketChatBot implements Bot {
 
     @Override
     public String getChannelName(String channelId) {
-        // TODO: implement this
-        return channelId;
+        return bot.getRoomName(channelId);
     }
 
     @Override
