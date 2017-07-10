@@ -114,8 +114,9 @@ public final class Application {
                                       Iterable<ArrayList<String>> bridgesConfig) {
         bridgesConfig.forEach(bridgeConfig -> bridgeConfig.forEach(fromChannelId -> {
             Optional<String> fromBotId = Application.channelToBotId(fromChannelId, channelsConfig);
-            if (fromBotId.isPresent()) {
+            if (fromBotId.isPresent() && bots.containsKey(fromBotId.get())) {
                 Bot fromBot = bots.get(fromBotId.get());
+
                 bridgeConfig.forEach(toChannelId -> {
                     Optional<String> toBotId = Application.channelToBotId(toChannelId, channelsConfig);
                     if (toBotId.isPresent()) {

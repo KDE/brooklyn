@@ -63,7 +63,7 @@ public class RocketChatBot implements Bot {
         try {
             this.bot = new org.kde.brooklyn.RocketChatBot(serverUri, username, password) {
                 @Override
-                public void close() throws Exception {
+                public void close() {
                 }
 
                 @Override
