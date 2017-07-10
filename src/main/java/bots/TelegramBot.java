@@ -185,9 +185,11 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
                     botsController.askForUsers(Long.toString(message.getChatId()));
             StringBuilder output = new StringBuilder();
             users.forEach(channel -> {
+                final String channelName = channel.getValue0().getChannelName(channel.getValue1());
+
                 output.append(channel.getValue0().getClass().getSimpleName())
                         .append('/')
-                        .append(channel.getValue1())
+                        .append(channelName)
                         .append(':')
                         .append(System.lineSeparator());
 
