@@ -71,7 +71,7 @@ public class RocketChatBot implements Bot {
 
                 @Override
                 protected void onMessageReceived(RocketChatMessage message) {
-                    // if (!username.equals(message.username))
+                    if (!username.equals(message.username))
                         RocketChatBot.this.onMessageReceived(message);
                 }
 
