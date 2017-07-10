@@ -116,10 +116,11 @@ public final class IrcBot implements Bot {
                 "users".equals(textSpaceSplitted[1])) {
             List<Triplet<Bot, String, List<String>>> users = botsController.askForUsers(channelFrom);
             users.forEach(channel -> {
-                StringBuilder output = new StringBuilder();
+                final String channelName = channel.getValue0().getChannelName(channel.getValue1());
+                final StringBuilder output = new StringBuilder();
                 output.append(channel.getValue0().getClass().getSimpleName())
                         .append('/')
-                        .append(channel.getValue1())
+                        .append(channelName)
                         .append(": ");
 
                 channel.getValue2().forEach(userTo -> output.append(userTo).append(", "));

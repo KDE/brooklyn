@@ -499,7 +499,7 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
 
     @Override
     public String getChannelName(String channelId) {
-        return this.chats.get(Long.parseLong(channelId));
+        return this.chats.getOrDefault(Long.parseLong(channelId), channelId);
     }
 
     @Override
