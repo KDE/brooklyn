@@ -21,6 +21,7 @@ import core.BotsController;
 import messages.BotDocumentMessage;
 import messages.BotMessage;
 import messages.BotTextMessage;
+import org.javatuples.Triplet;
 import org.kde.brooklyn.RocketChatException;
 import org.kde.brooklyn.RocketChatMessage;
 
@@ -29,12 +30,14 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 public class RocketChatBot implements Bot {
     private static final String USERNAME_KEY = "username";
     private static final String HOST_KEY = "host";
     private static final String PASSWORD_KEY = "password";
     private static final long WAIT_BEFORE_LOGIN = 2000;
+    private static final Pattern PATTERN = Pattern.compile("\\s+");
 
     private final BotsController botsController = new BotsController();
     private org.kde.brooklyn.RocketChatBot bot;
@@ -68,7 +71,7 @@ public class RocketChatBot implements Bot {
 
                 @Override
                 protected void onMessageReceived(RocketChatMessage message) {
-                    if (!username.equals(message.username))
+                    // if (!username.equals(message.username))
                         RocketChatBot.this.onMessageReceived(message);
                 }
 
@@ -99,11 +102,30 @@ public class RocketChatBot implements Bot {
     }
 
     private void onMessageReceived(RocketChatMessage message) {
-        final BotMessage botMessage = new BotMessage(message.username, message.roomId, this);
-        final BotTextMessage botTextMessage = new BotTextMessage(botMessage, message.msg);
+        String[] textSpaceSplitted = PATTERN.split(message.msg);
+        if (2 == textSpaceSplitted.length &&
+                textSpaceSplitted[0].equals("@" + message.username) &&
+                "users".equals(textSpaceSplitted[1])) {
+            List<Triplet<Bot, String, List<String>>> users = botsController.askForUsers(message.roomId);
+            users.forEach(channel -> {
+                final String channelName = channel.getValue0().getChannelName(channel.getValue1());
+                final StringBuilder output = new StringBuilder();
+                output.append(channel.getValue0().getClass().getSimpleName())
+                        .append('/')
+                        .append(channelName)
+                        .append(": ");
 
-        botsController.sendMessage(botTextMessage, message.roomId, Optional.of(message.id));
+                channel.getValue2().forEach(userTo -> output.append(userTo).append(", "));
 
+                output.delete(output.length() - 2, output.length() - 1);
+                bot.sendMessage(output.toString(), message.roomId, Optional.empty());
+            });
+        } else {
+            final BotMessage botMessage = new BotMessage(message.username, message.roomId, this);
+            final BotTextMessage botTextMessage = new BotTextMessage(botMessage, message.msg);
+
+            botsController.sendMessage(botTextMessage, message.roomId, Optional.of(message.id));
+        }
     }
 
     private void onMessageEdited(RocketChatMessage message) {
