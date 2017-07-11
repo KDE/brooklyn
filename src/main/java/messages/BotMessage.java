@@ -20,11 +20,6 @@ package messages;
 import bots.Bot;
 
 public class BotMessage {
-    public static final String LICENSE_MESSAGE =
-            "This software is released under the GNU AGPL license."
-                    + System.lineSeparator()
-                    + "https://phabricator.kde.org/source/brooklyn/";
-
     private final String nicknameFrom;
     private final String channelFrom;
     private final Bot botFrom;

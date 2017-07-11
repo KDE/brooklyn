@@ -113,18 +113,6 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
         return new Triplet(output, filenameWithoutExtension, extension);
     }
 
-    private void onPrivateMessageReceived(long chatId) {
-        SendMessage licenceMsg = new SendMessage();
-        licenceMsg.setChatId(chatId);
-        licenceMsg.setText(BotTextMessage.LICENSE_MESSAGE);
-        try {
-            sendMessage(licenceMsg);
-        } catch (TelegramApiException e) {
-            System.err.println("Error while sending the licence message");
-            e.printStackTrace();
-        }
-    }
-
     private void onAttachmentReceived(BotMessage botMsg, Message message,
                                       String fileId, BotDocumentType type,
                                       String msgId) {
@@ -254,80 +242,75 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
             String channelFrom = chat.getTitle();
             String authorNickname = user.getUserName();
 
-            // If it is a private message, send him a "licence message"
-            if (chat.isUserChat()) {
-                onPrivateMessageReceived(chatId);
-            } else {
-                BotMessage botMsg = new BotMessage(authorNickname, channelFrom, this);
+            BotMessage botMsg = new BotMessage(authorNickname, channelFrom, this);
 
-                // Send image
-                if (message.hasPhoto()) {
-                    List<PhotoSize> photos = message.getPhoto();
-                    PhotoSize photo = photos.get(photos.size() - 1);
-                    onAttachmentReceived(botMsg, message, photo.getFileId(),
-                            BotDocumentType.IMAGE, messageId);
-                }
-
-                // Send voice message
-                else if (message.getVoice() != null) {
-                    Voice voice = message.getVoice();
-                    onAttachmentReceived(botMsg, message, voice.getFileId(),
-                            BotDocumentType.AUDIO, messageId);
-                }
-
-                // Send document
-                else if (message.hasDocument()) {
-                    Document document = message.getDocument();
-                    onAttachmentReceived(botMsg, message, document.getFileId(),
-                            BotDocumentType.OTHER, messageId);
-                }
-
-                // Send videomessages
-                else if (null != message.getVideoNote()) {
-                    VideoNote video = message.getVideoNote();
-                    onAttachmentReceived(botMsg, message, video.getFileId(),
-                            BotDocumentType.VIDEO, messageId);
-                }
-
-                // Send video
-                else if (null != message.getVideo()) {
-                    Video video = message.getVideo();
-                    onAttachmentReceived(botMsg, message, video.getFileId(),
-                            BotDocumentType.VIDEO, messageId);
-                }
-
-                // Send audio
-                else if (null != message.getAudio()) {
-                    Audio audio = message.getAudio();
-                    onAttachmentReceived(botMsg, message, audio.getFileId(),
-                            BotDocumentType.AUDIO, messageId);
-                }
-
-                // Send position
-                else if (message.hasLocation()) {
-                    Location location = message.getLocation();
-                    onLocationReceived(botMsg, message, location.getLatitude(),
-                            location.getLongitude(), messageId);
-                }
-
-                // Send contact
-                else if (null != message.getContact()) {
-                    Contact contact = message.getContact();
-                    onContactReceived(botMsg, message, messageId);
-                }
-
-                // Send sticker
-                else if (message.getSticker() != null) {
-                    Sticker sticker = message.getSticker();
-                    BotTextMessage textMessage = new BotTextMessage(botMsg, sticker.getEmoji());
-                    botsController.sendMessage(textMessage, chat.getId().toString(),
-                            Optional.of(messageId));
-                }
-
-                // Send plain text
-                else if (message.hasText())
-                    onPlainTextReceived(message, botMsg, messageId);
+            // Send image
+            if (message.hasPhoto()) {
+                List<PhotoSize> photos = message.getPhoto();
+                PhotoSize photo = photos.get(photos.size() - 1);
+                onAttachmentReceived(botMsg, message, photo.getFileId(),
+                        BotDocumentType.IMAGE, messageId);
             }
+
+            // Send voice message
+            else if (message.getVoice() != null) {
+                Voice voice = message.getVoice();
+                onAttachmentReceived(botMsg, message, voice.getFileId(),
+                        BotDocumentType.AUDIO, messageId);
+            }
+
+            // Send document
+            else if (message.hasDocument()) {
+                Document document = message.getDocument();
+                onAttachmentReceived(botMsg, message, document.getFileId(),
+                        BotDocumentType.OTHER, messageId);
+            }
+
+            // Send videomessages
+            else if (null != message.getVideoNote()) {
+                VideoNote video = message.getVideoNote();
+                onAttachmentReceived(botMsg, message, video.getFileId(),
+                        BotDocumentType.VIDEO, messageId);
+            }
+
+            // Send video
+            else if (null != message.getVideo()) {
+                Video video = message.getVideo();
+                onAttachmentReceived(botMsg, message, video.getFileId(),
+                        BotDocumentType.VIDEO, messageId);
+            }
+
+            // Send audio
+            else if (null != message.getAudio()) {
+                Audio audio = message.getAudio();
+                onAttachmentReceived(botMsg, message, audio.getFileId(),
+                        BotDocumentType.AUDIO, messageId);
+            }
+
+            // Send position
+            else if (message.hasLocation()) {
+                Location location = message.getLocation();
+                onLocationReceived(botMsg, message, location.getLatitude(),
+                        location.getLongitude(), messageId);
+            }
+
+            // Send contact
+            else if (null != message.getContact()) {
+                Contact contact = message.getContact();
+                onContactReceived(botMsg, message, messageId);
+            }
+
+            // Send sticker
+            else if (message.getSticker() != null) {
+                Sticker sticker = message.getSticker();
+                BotTextMessage textMessage = new BotTextMessage(botMsg, sticker.getEmoji());
+                botsController.sendMessage(textMessage, chat.getId().toString(),
+                        Optional.of(messageId));
+            }
+
+            // Send plain text
+            else if (message.hasText())
+                onPlainTextReceived(message, botMsg, messageId);
         }
 
         // Edit a message
