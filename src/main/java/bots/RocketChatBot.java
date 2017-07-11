@@ -21,10 +21,12 @@ import core.BotsController;
 import messages.BotDocumentMessage;
 import messages.BotMessage;
 import messages.BotTextMessage;
+import models.FileStorage;
 import org.javatuples.Triplet;
 import org.kde.brooklyn.RocketChatException;
 import org.kde.brooklyn.RocketChatMessage;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -146,7 +148,23 @@ public class RocketChatBot implements Bot {
 
     @Override
     public Optional<String> sendMessage(BotDocumentMessage msg, String channelTo) {
-        // TODO: implement this
+        try {
+            final String fileUrl = FileStorage.storeFile(msg.getDoc(), msg.getFileExtension());
+            final String id;
+            if (null != msg.getText()) {
+                id = bot.sendMessage(fileUrl + System.lineSeparator() + msg.getText(),
+                        channelTo, Optional.of(msg.getNicknameFrom()));
+            } else {
+                id = bot.sendMessage(fileUrl,
+                        channelTo, Optional.of(msg.getNicknameFrom()));
+            }
+
+            return Optional.of(id);
+        } catch (URISyntaxException | IOException e) {
+            System.err.println("Error while storing the doc");
+            e.printStackTrace();
+        }
+
         return Optional.empty();
     }
 
