@@ -19,16 +19,21 @@ package bots;
 
 import core.BotsController;
 import messages.BotDocumentMessage;
+import messages.BotDocumentType;
 import messages.BotMessage;
 import messages.BotTextMessage;
 import models.FileStorage;
+import org.apache.commons.io.IOUtils;
 import org.javatuples.Triplet;
 import org.kde.brooklyn.RocketChatException;
 import org.kde.brooklyn.RocketChatMessage;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -36,7 +41,8 @@ import java.util.regex.Pattern;
 
 public class RocketChatBot implements Bot {
     private static final String USERNAME_KEY = "username";
-    private static final String HOST_KEY = "host";
+    private static final String WEBSOCKET_URL_KEY = "websocket-url";
+    private static final String FILE_UPLOAD_URL_KEY = "file-upload-url";
     private static final String PASSWORD_KEY = "password";
     private static final long WAIT_BEFORE_LOGIN = 2000;
     private static final Pattern PATTERN = Pattern.compile("\\s+");
@@ -51,14 +57,14 @@ public class RocketChatBot implements Bot {
                         final String[] channels) {
         this.botId = botId;
 
-        if (!configs.containsKey(HOST_KEY) ||
+        if (!configs.containsKey(WEBSOCKET_URL_KEY) ||
                 !configs.containsKey(USERNAME_KEY) ||
                 !configs.containsKey(PASSWORD_KEY))
             return false;
 
         final URI serverUri;
         try {
-            serverUri = new URI(configs.get(HOST_KEY));
+            serverUri = new URI(configs.get(WEBSOCKET_URL_KEY));
         } catch (URISyntaxException e) {
             return false;
         }
@@ -103,30 +109,48 @@ public class RocketChatBot implements Bot {
         botsController.addBridge(bot, channelTo, channelFrom);
     }
 
+    private byte[] downloadFromId(String id) throws IOException {
+        URL fileUrl = new URL("");
+        HttpURLConnection httpConn = (HttpURLConnection) fileUrl.openConnection();
+        InputStream inputStream = httpConn.getInputStream();
+        byte[] output = IOUtils.toByteArray(inputStream);
+
+        inputStream.close();
+        httpConn.disconnect();
+        return output;
+    }
+
     private void onMessageReceived(RocketChatMessage message) {
-        String[] textSpaceSplitted = PATTERN.split(message.msg);
-        if (2 == textSpaceSplitted.length &&
-                textSpaceSplitted[0].equals("@" + message.username) &&
-                "users".equals(textSpaceSplitted[1])) {
-            List<Triplet<Bot, String, List<String>>> users = botsController.askForUsers(message.roomId);
-            users.forEach(channel -> {
-                final String channelName = channel.getValue0().getChannelName(channel.getValue1());
-                final StringBuilder output = new StringBuilder();
-                output.append(channel.getValue0().getClass().getSimpleName())
-                        .append('/')
-                        .append(channelName)
-                        .append(": ");
-
-                channel.getValue2().forEach(userTo -> output.append(userTo).append(", "));
-
-                output.delete(output.length() - 2, output.length() - 1);
-                bot.sendMessage(output.toString(), message.roomId, Optional.empty());
-            });
-        } else {
+        if (message.attachment.isPresent()) {
             final BotMessage botMessage = new BotMessage(message.username, message.roomId, this);
             final BotTextMessage botTextMessage = new BotTextMessage(botMessage, message.msg);
+            final BotDocumentMessage botDocumentMessage =
+                    new BotDocumentMessage(message, filename, extension, data, BotDocumentType.OTHER);
+        } else {
+            String[] textSpaceSplitted = PATTERN.split(message.msg);
+            if (2 == textSpaceSplitted.length &&
+                    textSpaceSplitted[0].equals("@" + message.username) &&
+                    "users".equals(textSpaceSplitted[1])) {
+                List<Triplet<Bot, String, List<String>>> users = botsController.askForUsers(message.roomId);
+                users.forEach(channel -> {
+                    final String channelName = channel.getValue0().getChannelName(channel.getValue1());
+                    final StringBuilder output = new StringBuilder();
+                    output.append(channel.getValue0().getClass().getSimpleName())
+                            .append('/')
+                            .append(channelName)
+                            .append(": ");
 
-            botsController.sendMessage(botTextMessage, message.roomId, Optional.of(message.id));
+                    channel.getValue2().forEach(userTo -> output.append(userTo).append(", "));
+
+                    output.delete(output.length() - 2, output.length() - 1);
+                    bot.sendMessage(output.toString(), message.roomId, Optional.empty());
+                });
+            } else {
+                final BotMessage botMessage = new BotMessage(message.username, message.roomId, this);
+                final BotTextMessage botTextMessage = new BotTextMessage(botMessage, message.msg);
+
+                botsController.sendMessage(botTextMessage, message.roomId, Optional.of(message.id));
+            }
         }
     }
 

@@ -42,4 +42,6 @@ public interface Bot extends AutoCloseable {
     default String getChannelName(String channelId) {
         return channelId;
     }
+
+
 }
