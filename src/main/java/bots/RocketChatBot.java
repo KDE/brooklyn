@@ -34,6 +34,7 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -46,8 +47,8 @@ public class RocketChatBot implements Bot {
     private static final String PASSWORD_KEY = "password";
     private static final long WAIT_BEFORE_LOGIN = 2000;
     private static final Pattern PATTERN = Pattern.compile("\\s+");
-
     private final BotsController botsController = new BotsController();
+    private Map<String, String> configs = new HashMap<>(0);
     private org.kde.brooklyn.RocketChatBot bot;
 
     private String botId;
@@ -56,6 +57,7 @@ public class RocketChatBot implements Bot {
     public boolean init(final String botId, final Map<String, String> configs,
                         final String[] channels) {
         this.botId = botId;
+        this.configs = configs;
 
         if (!configs.containsKey(WEBSOCKET_URL_KEY) ||
                 !configs.containsKey(USERNAME_KEY) ||
@@ -110,8 +112,9 @@ public class RocketChatBot implements Bot {
     }
 
     private byte[] downloadFromId(String id) throws IOException {
-        URL fileUrl = new URL("");
-        HttpURLConnection httpConn = (HttpURLConnection) fileUrl.openConnection();
+        final String baseUrl = configs.get(WEBSOCKET_URL_KEY);
+        final String fileUrl = (baseUrl + "/" + id).replaceAll("//+", "/");
+        HttpURLConnection httpConn = (HttpURLConnection) new URL(fileUrl).openConnection();
         InputStream inputStream = httpConn.getInputStream();
         byte[] output = IOUtils.toByteArray(inputStream);
 
