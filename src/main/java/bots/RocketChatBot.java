@@ -23,15 +23,13 @@ import messages.BotDocumentType;
 import messages.BotMessage;
 import messages.BotTextMessage;
 import models.FileStorage;
-import org.apache.commons.io.IOUtils;
 import org.javatuples.Triplet;
 import org.kde.brooklyn.RocketChatAttachment;
 import org.kde.brooklyn.RocketChatException;
 import org.kde.brooklyn.RocketChatMessage;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -74,8 +72,17 @@ public class RocketChatBot implements Bot {
         final String username = configs.get(USERNAME_KEY);
         final String password = configs.get(PASSWORD_KEY);
 
+        final URL fileUploadUrl;
         try {
-            this.bot = new org.kde.brooklyn.RocketChatBot(serverUri, username, password) {
+            fileUploadUrl = new URL(configs.get(FILE_UPLOAD_URL_KEY));
+        } catch (MalformedURLException e) {
+            System.err.println("file-upload-url is not a valid URL. ");
+            e.printStackTrace();
+            return false;
+        }
+
+        try {
+            this.bot = new org.kde.brooklyn.RocketChatBot(serverUri, fileUploadUrl, username, password, true) {
                 @Override
                 public void close() {
                 }
@@ -112,28 +119,11 @@ public class RocketChatBot implements Bot {
         botsController.addBridge(bot, channelTo, channelFrom);
     }
 
-    private byte[] downloadFromId(String id) throws IOException {
-        final String baseUrl = configs.get(FILE_UPLOAD_URL_KEY);
-        final String fileUrl;
-        if (baseUrl.substring(baseUrl.length() - 2, baseUrl.length() - 1).equals("/"))
-            fileUrl = baseUrl + id;
-        else
-            fileUrl = baseUrl + "/" + id;
-
-        HttpURLConnection httpConn = (HttpURLConnection) new URL(fileUrl).openConnection();
-        InputStream inputStream = httpConn.getInputStream();
-        byte[] output = IOUtils.toByteArray(inputStream);
-
-        inputStream.close();
-        httpConn.disconnect();
-        return output;
-    }
-
     private void onMessageReceived(RocketChatMessage message) {
         if (message.attachment.isPresent()) {
             final RocketChatAttachment attachment = message.attachment.get();
 
-            final String[] filenameSplitted = attachment.title.split(".");
+            final String[] filenameSplitted = attachment.title.split("\\.");
             String filename;
             final String extension;
             if (filenameSplitted.length > 1) {
@@ -148,20 +138,13 @@ public class RocketChatBot implements Bot {
                 extension = "";
             }
 
-            try {
-                final byte[] data = downloadFromId(attachment.id + '/' + attachment.title);
+            final BotMessage botMessage = new BotMessage(message.username, message.roomId, this);
+            final BotTextMessage botTextMessage = new BotTextMessage(botMessage, message.msg);
+            final BotDocumentMessage botDocumentMessage =
+                    new BotDocumentMessage(botTextMessage,
+                            filename, extension, attachment.data, BotDocumentType.OTHER);
 
-                final BotMessage botMessage = new BotMessage(message.username, message.roomId, this);
-                final BotTextMessage botTextMessage = new BotTextMessage(botMessage, message.msg);
-                final BotDocumentMessage botDocumentMessage =
-                        new BotDocumentMessage(botTextMessage,
-                                filename, extension, data, BotDocumentType.OTHER);
-
-                botsController.sendMessage(botDocumentMessage, message.roomId, Optional.of(message.id));
-            } catch (IOException e) {
-                System.err.println("Failed to download the attachment");
-                e.printStackTrace();
-            }
+            botsController.sendMessage(botDocumentMessage, message.roomId, Optional.of(message.id));
         } else {
             String[] textSpaceSplitted = PATTERN.split(message.msg);
             if (2 == textSpaceSplitted.length &&
