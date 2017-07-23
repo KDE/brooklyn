@@ -51,7 +51,7 @@ import java.util.stream.Collectors;
    Wait until this will be stable:
    https://github.com/rubenlagus/TelegramBots/pull/230#issuecomment-306409017
 */
-public final class TelegramBot extends TelegramLongPollingBot implements Bot {
+public class TelegramBot extends TelegramLongPollingBot implements Bot {
     private static final String USERNAME_KEY = "username";
     private static final String TOKEN_KEY = "password";
     private static final Pattern COMPILE = Pattern.compile("\\\\s+");
