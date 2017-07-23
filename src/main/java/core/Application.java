@@ -154,7 +154,7 @@ public final class Application {
             }
 
             bots.entrySet().stream()
-                    .map(x -> x.getValue())
+                    .map(Entry::getValue)
                     .forEach(bot -> {
                         try {
                             bot.close();

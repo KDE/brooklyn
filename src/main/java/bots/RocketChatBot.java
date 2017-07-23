@@ -33,7 +33,6 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -44,10 +43,8 @@ public class RocketChatBot implements Bot {
     private static final String WEBSOCKET_URL_KEY = "websocket-url";
     private static final String FILE_UPLOAD_URL_KEY = "file-upload-url";
     private static final String PASSWORD_KEY = "password";
-    private static final long WAIT_BEFORE_LOGIN = 2000;
     private static final Pattern PATTERN = Pattern.compile("\\s+");
     private final BotsController botsController = new BotsController();
-    private Map<String, String> configs = new HashMap<>(0);
     private org.kde.brooklyn.RocketChatBot bot;
 
     private String botId;
@@ -56,7 +53,6 @@ public class RocketChatBot implements Bot {
     public boolean init(final String botId, final Map<String, String> configs,
                         final String[] channels) {
         this.botId = botId;
-        this.configs = configs;
 
         if (!configs.containsKey(WEBSOCKET_URL_KEY) ||
                 !configs.containsKey(USERNAME_KEY) ||

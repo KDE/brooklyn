@@ -33,6 +33,7 @@ import org.telegram.telegrambots.api.methods.send.*;
 import org.telegram.telegrambots.api.methods.updatingmessages.EditMessageCaption;
 import org.telegram.telegrambots.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.api.objects.*;
+import org.telegram.telegrambots.api.objects.stickers.Sticker;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
 import org.telegram.telegrambots.exceptions.TelegramApiRequestException;
@@ -96,7 +97,7 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
         GetFile getFile = new GetFile();
         getFile.setFileId(fileId);
 
-        File file = getFile(getFile);
+        File file = execute(getFile);
         URL fileUrl = new URL(file.getFileUrl(configs.get(TOKEN_KEY)));
         HttpURLConnection httpConn = (HttpURLConnection) fileUrl.openConnection();
         InputStream inputStream = httpConn.getInputStream();
@@ -190,7 +191,7 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
                     .setChatId(Long.toString(message.getChatId()))
                     .setText(output.toString());
             try {
-                sendMessage(messageToSend);
+                execute(messageToSend);
             } catch (TelegramApiException e) {
                 System.err.println("Failed to send message from TelegramBot");
                 e.printStackTrace();
@@ -344,7 +345,7 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
                         msg.getBotFrom().getId(), msg.getChannelFrom(),
                         msg.getNicknameFrom(), Optional.ofNullable(msg.getText())));
         try {
-            Message sentMessage = sendMessage(message);
+            Message sentMessage = execute(message);
             return Optional.of(sentMessage.getMessageId().toString());
         } catch (TelegramApiException e) {
             System.err.println(String.format("Failed to send message from %s to TelegramBot", msg.getBotFrom().getId()));
@@ -448,7 +449,7 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
         text.setText(messageText);
 
         try {
-            this.editMessageText(text);
+            execute(text);
         } catch (TelegramApiException e) {
             System.out.println("Waring: message text not found, trying to edit that as a caption...");
             e.printStackTrace(System.out);
@@ -459,7 +460,7 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
             caption.setCaption(messageText);
 
             try {
-                editMessageCaption(caption);
+                execute(caption);
             } catch (TelegramApiException e1) {
                 System.err.println("Error while changing img caption.");
                 e1.printStackTrace();
@@ -471,7 +472,7 @@ public final class TelegramBot extends TelegramLongPollingBot implements Bot {
     public List<String> getUsers(String channel) {
         return users.stream()
                 .filter(x -> x.getValue0().equals(channel))
-                .map(x -> x.getValue1())
+                .map(Pair::getValue1)
                 .collect(Collectors.toList());
     }
 
