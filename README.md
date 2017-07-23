@@ -18,6 +18,8 @@ The application needs a config file.
 
 The default path is `/etc/brooklyn/conf.yml` but you can define a custom path, passing it as a first parameter (e.g. `java -jar brooklyn.jar /new/path`).
 
+If you want to automate the process of configuring it on Debian 9 you can use [https://github.com/Davide95/brooklyn-ansible/blob/master/defaults/main.yml](brooklyn-ansible).
+
 ### Telegram bot
 
 Due to [Telegram APIs limit](https://core.telegram.org/bots/faq#broadcasting-to-users)
