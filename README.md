@@ -29,8 +29,8 @@ Remember to add the bot on each group you want to manage before adding it in you
 
 ### Rocket.Chat bot
 
-Use secure websocket (wss) instead of ws to connect the bot to a server,
-because login passwords are sent in plain text.
+You should use secure websocket (wss) instead of ws to connect the bot to a server,
+because messages are sent in plain text.
 
 Remember to add the bot on each channel you want to manage before adding it in your config file.
 
