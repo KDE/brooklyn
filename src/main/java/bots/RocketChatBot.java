@@ -135,7 +135,7 @@ public class RocketChatBot implements Bot {
             }
 
             final BotMessage botMessage = new BotMessage(message.username, message.roomId, this);
-            final BotTextMessage botTextMessage = new BotTextMessage(botMessage, message.msg);
+            final BotTextMessage botTextMessage = new BotTextMessage(botMessage, attachment.description.get());
 
             final BotDocumentMessage botDocumentMessage =
                     new BotDocumentMessage(botTextMessage,
@@ -172,7 +172,16 @@ public class RocketChatBot implements Bot {
 
     private void onMessageEdited(RocketChatMessage message) {
         final BotMessage botMessage = new BotMessage(message.username, message.roomId, this);
-        final BotTextMessage botTextMessage = new BotTextMessage(botMessage, message.msg);
+
+        String text = message.msg;
+        if (message.attachment.isPresent()) {
+            final RocketChatAttachment attachment = message.attachment.get();
+            if (attachment.description.isPresent()) {
+                text = attachment.description.get();
+            }
+        }
+
+        final BotTextMessage botTextMessage = new BotTextMessage(botMessage, text);
 
         botsController.editMessage(botTextMessage, message.roomId, message.id);
     }

@@ -47,10 +47,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-/* TODO: implement a way not to exceed bot messages limit
-   Wait until this will be stable:
-   https://github.com/rubenlagus/TelegramBots/pull/230#issuecomment-306409017
-*/
+// TODO: implement a way not to exceed bot messages limit
 public class TelegramBot extends TelegramLongPollingBot implements Bot {
     private static final String USERNAME_KEY = "username";
     private static final String TOKEN_KEY = "password";
