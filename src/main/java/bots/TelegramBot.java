@@ -342,7 +342,7 @@ public class TelegramBot extends TelegramLongPollingBot implements Bot {
         SendMessage message = new SendMessage()
                 .setChatId(channelTo)
                 .setText(BotsController.messageFormatter(
-                        msg.getBotFrom().getId(), msg.getBotFrom().getChannelName(msg.getChannelFrom()),
+                        msg.getBotFrom(), msg.getChannelFrom(),
                         msg.getNicknameFrom(), Optional.ofNullable(msg.getText())));
         try {
             Message sentMessage = execute(message);
@@ -357,7 +357,7 @@ public class TelegramBot extends TelegramLongPollingBot implements Bot {
     @Override
     public Optional<String> sendMessage(BotDocumentMessage msg, String channelTo) {
         String caption = BotsController.messageFormatter(
-                msg.getBotFrom().getId(), msg.getChannelFrom(),
+                msg.getBotFrom(), msg.getChannelFrom(),
                 msg.getNicknameFrom(), Optional.ofNullable(msg.getText()));
         String filename = msg.getFilename() + '.' + msg.getFileExtension();
 
@@ -439,9 +439,8 @@ public class TelegramBot extends TelegramLongPollingBot implements Bot {
 
     @Override
     public void editMessage(BotTextMessage msg, String channelTo, String messageId) {
-        String channelFromName = msg.getBotFrom().getChannelName(msg.getChannelFrom());
         String messageText = BotsController.messageFormatter(
-                msg.getBotFrom().getId(), channelFromName, msg.getNicknameFrom(),
+                msg.getBotFrom(), msg.getChannelFrom(), msg.getNicknameFrom(),
                 Optional.ofNullable(msg.getText()));
         EditMessageText text = new EditMessageText();
         text.setChatId(channelTo);
@@ -483,7 +482,11 @@ public class TelegramBot extends TelegramLongPollingBot implements Bot {
 
     @Override
     public String getChannelName(String channelId) {
-        return this.chats.getOrDefault(Long.parseLong(channelId), channelId);
+        try {
+            return this.chats.getOrDefault(Long.parseLong(channelId), channelId);
+        } catch (NumberFormatException e) {
+            return channelId;
+        }
     }
 
     @Override

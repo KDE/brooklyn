@@ -136,6 +136,7 @@ public class RocketChatBot implements Bot {
 
             final BotMessage botMessage = new BotMessage(message.username, message.roomId, this);
             final BotTextMessage botTextMessage = new BotTextMessage(botMessage, message.msg);
+
             final BotDocumentMessage botDocumentMessage =
                     new BotDocumentMessage(botTextMessage,
                             filename, extension, attachment.data, BotDocumentType.OTHER);
@@ -178,10 +179,7 @@ public class RocketChatBot implements Bot {
 
     @Override
     public Optional<String> sendMessage(BotTextMessage msg, String channelTo) {
-        final String alias = BotsController.messageFormatter(msg.getBotFrom().getId(),
-                msg.getChannelFrom(), msg.getNicknameFrom(), Optional.empty());
-
-        final String msgId = bot.sendMessage(msg.getText(), channelTo, Optional.of(alias));
+        final String msgId = bot.sendMessage(msg.getText(), channelTo, Optional.empty());
         return Optional.of(msgId);
     }
 
@@ -192,10 +190,10 @@ public class RocketChatBot implements Bot {
             final String id;
             if (null != msg.getText()) {
                 id = bot.sendMessage(fileUrl + System.lineSeparator() + msg.getText(),
-                        channelTo, Optional.of(msg.getNicknameFrom()));
+                        channelTo, Optional.empty());
             } else {
                 id = bot.sendMessage(fileUrl,
-                        channelTo, Optional.of(msg.getNicknameFrom()));
+                        channelTo, Optional.empty());
             }
 
             return Optional.of(id);
@@ -209,7 +207,9 @@ public class RocketChatBot implements Bot {
 
     @Override
     public void editMessage(BotTextMessage msg, String channelTo, String messageId) {
-        bot.updateMessage(msg.getText(), messageId, channelTo);
+        final String text = BotsController.messageFormatter(msg.getBotFrom(),
+                msg.getChannelFrom(), msg.getNicknameFrom(), Optional.empty());
+        bot.updateMessage(text, messageId, channelTo);
     }
 
     @Override

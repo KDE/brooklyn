@@ -37,16 +37,16 @@ public class BotsController {
     // Triplet<Bot bot, String channelTo, String channelFrom>
     private final List<Triplet<Bot, String, String>> sendToList = new LinkedList<>();
 
-    public static String messageFormatter(String botFrom,
+    public static String messageFormatter(Bot botFrom,
                                           String channelFrom,
                                           String nicknameFrom,
                                           Optional<String> message) {
         if (message.isPresent())
             return String.format("%s/%s/%s: %s",
-                    botFrom, channelFrom, nicknameFrom, message.get());
+                    botFrom.getId(), botFrom.getChannelName(channelFrom), nicknameFrom, message.get());
 
         return String.format("%s/%s/%s",
-                botFrom, channelFrom, nicknameFrom);
+                botFrom.getId(), botFrom.getChannelName(channelFrom), nicknameFrom);
     }
 
     public void addBridge(Bot bot, String channelTo, String channelFrom) {

@@ -93,7 +93,7 @@ public final class IrcBot implements Bot {
         String[] messagesWithoutNewline = COMPILE.split(msg.getText()); // IRC doesn't allow CR / LF
         for (String messageToken : messagesWithoutNewline) {
             client.sendMessage(channelTo, BotsController.messageFormatter(
-                    msg.getBotFrom().getId(), msg.getChannelFrom(),
+                    msg.getBotFrom(), msg.getChannelFrom(),
                     msg.getNicknameFrom(), Optional.ofNullable(messageToken)));
         }
 
@@ -179,23 +179,23 @@ public final class IrcBot implements Bot {
 
                 if (text.length == 1) {
                     this.client.sendMessage(channelTo, BotsController.messageFormatter(
-                            msg.getBotFrom().getId(), msg.getChannelFrom(), msg.getNicknameFrom(),
+                            msg.getBotFrom(), msg.getChannelFrom(), msg.getNicknameFrom(),
                             Optional.of(fileUrl + ' ' + text[0])));
                 } else {
                     this.client.sendMessage(channelTo, BotsController.messageFormatter(
-                            msg.getBotFrom().getId(),
+                            msg.getBotFrom(),
                             msg.getChannelFrom(),
                             msg.getNicknameFrom(),
                             Optional.ofNullable(fileUrl)));
                     for (String messageToken : text) {
                         client.sendMessage(channelTo, BotsController.messageFormatter(
-                                msg.getBotFrom().getId(), msg.getChannelFrom(),
+                                msg.getBotFrom(), msg.getChannelFrom(),
                                 msg.getNicknameFrom(), Optional.ofNullable(messageToken)));
                     }
                 }
             } else {
                 this.client.sendMessage(channelTo, BotsController.messageFormatter(
-                        msg.getBotFrom().getId(), msg.getChannelFrom(),
+                        msg.getBotFrom(), msg.getChannelFrom(),
                         msg.getNicknameFrom(), Optional.ofNullable(fileUrl)));
             }
         } catch (URISyntaxException | IOException e) {
@@ -209,11 +209,10 @@ public final class IrcBot implements Bot {
 
     @Override
     public void editMessage(BotTextMessage msg, String channelTo, String messageId) {
-        String channelName = msg.getBotFrom().getChannelName(msg.getChannelFrom());
         String[] messagesWithoutNewline = COMPILE.split(msg.getText()); // IRC doesn't allow CR / LF
         for (String messageToken : messagesWithoutNewline) {
             client.sendMessage(channelTo, BotsController.messageFormatter(
-                    msg.getBotFrom().getId(), channelName, msg.getNicknameFrom(),
+                    msg.getBotFrom(), msg.getChannelFrom(), msg.getNicknameFrom(),
                     Optional.of(MessageFormat.format(resourceBundle.getString("message-edited"), messageToken))));
         }
     }
