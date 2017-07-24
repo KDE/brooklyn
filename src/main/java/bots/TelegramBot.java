@@ -342,7 +342,7 @@ public class TelegramBot extends TelegramLongPollingBot implements Bot {
         SendMessage message = new SendMessage()
                 .setChatId(channelTo)
                 .setText(BotsController.messageFormatter(
-                        msg.getBotFrom().getId(), msg.getChannelFrom(),
+                        msg.getBotFrom().getId(), msg.getBotFrom().getChannelName(msg.getChannelFrom()),
                         msg.getNicknameFrom(), Optional.ofNullable(msg.getText())));
         try {
             Message sentMessage = execute(message);
