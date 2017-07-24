@@ -24,7 +24,7 @@ import java.util.List;
 public class MessageBuilder {
     private static Connection database;
     private final int idFrom;
-    private final List<Integer> idsTo = new LinkedList();
+    private final List<Integer> idsTo = new LinkedList<>();
 
     public MessageBuilder(String botId, String channelId, String messageId) {
         idFrom = append(botId, channelId, messageId);

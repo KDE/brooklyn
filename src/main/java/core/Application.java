@@ -119,14 +119,14 @@ public final class Application {
 
                 bridgeConfig.forEach(toChannelId -> {
                     Optional<String> toBotId = Application.channelToBotId(toChannelId, channelsConfig);
-                    if (toBotId.isPresent()) {
-                        Bot toBot = bots.get(toBotId.get());
+                    toBotId.ifPresent(id -> {
+                        Bot toBot = bots.get(id);
                         Map<String, String> toChannelConfig = (Map<String, String>) channelsConfig.get(toChannelId);
                         Map<String, String> fromChannelConfig = (Map<String, String>) channelsConfig.get(fromChannelId);
 
                         if (!fromChannelId.equals(toChannelId))
                             fromBot.addBridge(toBot, toChannelConfig.get(Config.NAME_KEY), fromChannelConfig.get(Config.NAME_KEY));
-                    }
+                    });
                 });
             }
         }));

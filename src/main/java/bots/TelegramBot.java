@@ -488,6 +488,5 @@ public class TelegramBot extends TelegramLongPollingBot implements Bot {
 
     @Override
     public void close() throws Exception {
-        ;
     }
 }

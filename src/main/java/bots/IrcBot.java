@@ -26,6 +26,7 @@ import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.Invoke;
 import org.javatuples.Triplet;
 import org.kitteh.irc.client.library.Client;
+import org.kitteh.irc.client.library.element.Actor;
 import org.kitteh.irc.client.library.element.Channel;
 import org.kitteh.irc.client.library.element.User;
 import org.kitteh.irc.client.library.event.channel.ChannelMessageEvent;
@@ -144,11 +145,7 @@ public final class IrcBot implements Bot {
             Optional<Channel> channelFrom = event.getAffectedChannel();
             ChannelUserListChangeEvent.Change change = event.getChange();
 
-            String channelFromName;
-            if (channelFrom.isPresent())
-                channelFromName = channelFrom.get().getName();
-            else
-                channelFromName = BotsController.EVERY_CHANNEL;
+            final String channelFromName = channelFrom.map(Actor::getName).orElse(BotsController.EVERY_CHANNEL);
 
             if (blacklist.contains(authorNickname))
                 return;
@@ -159,8 +156,10 @@ public final class IrcBot implements Bot {
                 this.blacklist.add(authorNickname);
                 message = MessageFormat.format(resourceBundle.getString("channel-joined"), authorNickname);
             } else
-                message = MessageFormat.format(resourceBundle.getString(channelFrom.isPresent()
-                        ? "channel-leaved" : "server-leaved"), authorNickname);
+                message = MessageFormat.format(resourceBundle.getString(
+                        channelFrom.map(channel -> "channel-leaved")
+                                .orElse("server-leaved")),
+                        authorNickname);
 
             BotMessage msg = new BotMessage(authorNickname, channelFromName, this);
             BotTextMessage textMessage = new BotTextMessage(msg, message);

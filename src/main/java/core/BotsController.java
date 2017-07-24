@@ -41,12 +41,10 @@ public class BotsController {
                                           String channelFrom,
                                           String nicknameFrom,
                                           Optional<String> message) {
-        if (message.isPresent())
-            return String.format("%s/%s/%s: %s",
-                    botFrom.getId(), botFrom.getChannelName(channelFrom), nicknameFrom, message.get());
 
-        return String.format("%s/%s/%s",
-                botFrom.getId(), botFrom.getChannelName(channelFrom), nicknameFrom);
+        return message.map(s -> String.format("%s/%s/%s: %s",
+                botFrom.getId(), botFrom.getChannelName(channelFrom), nicknameFrom, s)).orElseGet(() -> String.format("%s/%s/%s",
+                botFrom.getId(), botFrom.getChannelName(channelFrom), nicknameFrom));
     }
 
     public void addBridge(Bot bot, String channelTo, String channelFrom) {
@@ -60,20 +58,15 @@ public class BotsController {
                     Optional<String> message = MessagesModel.getChildMessage(messageText.getBotFrom().getId(),
                             messageText.getChannelFrom(), messageId,
                             sendTo.getValue0().getId(), sendTo.getValue1());
-                    if (message.isPresent()) {
-                        sendTo.getValue0().editMessage(messageText, sendTo.getValue1(), message.get());
-                    }
+                    message.ifPresent(id -> sendTo.getValue0().editMessage(messageText, sendTo.getValue1(), id));
                 });
     }
 
     public void sendMessage(BotMessage message, String channelFrom,
                             Optional<String> messageId) {
         final MessageBuilder mb;
-        if (messageId.isPresent())
-            mb = new MessageBuilder(message.getBotFrom().getId(), message.getChannelFrom(),
-                    messageId.get());
-        else
-            mb = null;
+        mb = messageId.map(id -> new MessageBuilder(message.getBotFrom().getId(), message.getChannelFrom(),
+                id)).orElse(null);
 
 
         this.sendToList.stream()
@@ -91,14 +84,11 @@ public class BotsController {
                         return;
                     }
 
-                    if (messageId.isPresent()) {
-                        mb.append(sendTo.getValue0().getId(),
-                                sendTo.getValue1(), msgId.orElse(UUID.randomUUID().toString()));
-                    }
+                    messageId.ifPresent(s -> mb.append(sendTo.getValue0().getId(),
+                            sendTo.getValue1(), msgId.orElse(UUID.randomUUID().toString())));
                 });
 
-        if (messageId.isPresent())
-            mb.saveHistory();
+        messageId.ifPresent(s -> mb.saveHistory());
     }
 
     /**
