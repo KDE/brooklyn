@@ -188,7 +188,11 @@ public class RocketChatBot implements Bot {
 
     @Override
     public Optional<String> sendMessage(BotTextMessage msg, String channelTo) {
-        final String msgId = bot.sendMessage(msg.getText(), channelTo, Optional.empty());
+        final String msgText = BotsController.messageFormatter(
+                msg.getBotFrom(), msg.getChannelFrom(), msg.getNicknameFrom(),
+                Optional.of(msg.getText()));
+
+        final String msgId = bot.sendMessage(msgText, channelTo, Optional.empty());
         return Optional.of(msgId);
     }
 
@@ -196,16 +200,17 @@ public class RocketChatBot implements Bot {
     public Optional<String> sendMessage(BotDocumentMessage msg, String channelTo) {
         try {
             final String fileUrl = FileStorage.storeFile(msg.getDoc(), msg.getFileExtension());
-            final String id;
-            if (null != msg.getText()) {
-                id = bot.sendMessage(fileUrl + System.lineSeparator() + msg.getText(),
-                        channelTo, Optional.empty());
-            } else {
-                id = bot.sendMessage(fileUrl,
-                        channelTo, Optional.empty());
-            }
+            String text = fileUrl;
+            if (null != msg.getText())
+                text += System.lineSeparator() + msg.getText();
 
-            return Optional.of(id);
+            final String msgText = BotsController.messageFormatter(
+                    msg.getBotFrom(), msg.getChannelFrom(), msg.getNicknameFrom(),
+                    Optional.of(text));
+
+            final String msgId = bot.sendMessage(msgText,
+                    channelTo, Optional.empty());
+            return Optional.of(msgId);
         } catch (URISyntaxException | IOException e) {
             System.err.println("Error while storing the doc");
             e.printStackTrace();
@@ -217,7 +222,7 @@ public class RocketChatBot implements Bot {
     @Override
     public void editMessage(BotTextMessage msg, String channelTo, String messageId) {
         final String text = BotsController.messageFormatter(msg.getBotFrom(),
-                msg.getChannelFrom(), msg.getNicknameFrom(), Optional.empty());
+                msg.getChannelFrom(), msg.getNicknameFrom(), Optional.of(msg.getText()));
         bot.updateMessage(text, messageId, channelTo);
     }
 

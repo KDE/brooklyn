@@ -64,10 +64,8 @@ public class BotsController {
 
     public void sendMessage(BotMessage message, String channelFrom,
                             Optional<String> messageId) {
-        final MessageBuilder mb;
-        mb = messageId.map(id -> new MessageBuilder(message.getBotFrom().getId(), message.getChannelFrom(),
+        final MessageBuilder mb = messageId.map(id -> new MessageBuilder(message.getBotFrom().getId(), message.getChannelFrom(),
                 id)).orElse(null);
-
 
         this.sendToList.stream()
                 .filter(sendTo -> sendTo.getValue2().equals(channelFrom) || channelFrom.equals(BotsController.EVERY_CHANNEL))
