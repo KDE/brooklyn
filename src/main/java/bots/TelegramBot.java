@@ -237,7 +237,7 @@ public class TelegramBot extends TelegramLongPollingBot implements Bot {
             Chat chat = message.getChat();
             chats.put(chat.getId(), chat.getTitle());
 
-            String channelFrom = chat.getTitle();
+            String channelFrom = chat.getId().toString();
             String authorNickname = user.getUserName();
 
             BotMessage botMsg = new BotMessage(authorNickname, channelFrom, this);
@@ -302,7 +302,7 @@ public class TelegramBot extends TelegramLongPollingBot implements Bot {
             else if (message.getSticker() != null) {
                 Sticker sticker = message.getSticker();
                 BotTextMessage textMessage = new BotTextMessage(botMsg, sticker.getEmoji());
-                botsController.sendMessage(textMessage, chat.getId().toString(),
+                botsController.sendMessage(textMessage, channelFrom,
                         Optional.of(messageId));
             }
 
