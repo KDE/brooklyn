@@ -22,13 +22,11 @@ import messages.BotDocumentMessage;
 import messages.BotDocumentType;
 import messages.BotMessage;
 import messages.BotTextMessage;
-import models.FileStorage;
 import org.javatuples.Triplet;
 import org.kde.brooklyn.RocketChatAttachment;
 import org.kde.brooklyn.RocketChatException;
 import org.kde.brooklyn.RocketChatMessage;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -198,25 +196,17 @@ public class RocketChatBot implements Bot {
 
     @Override
     public Optional<String> sendMessage(BotDocumentMessage msg, String channelTo) {
-        try {
-            final String fileUrl = FileStorage.storeFile(msg.getDoc(), msg.getFileExtension());
-            String text = fileUrl;
-            if (null != msg.getText())
-                text += System.lineSeparator() + msg.getText();
+        String caption = BotsController.messageFormatter(
+                msg.getBotFrom(), msg.getChannelFrom(),
+                msg.getNicknameFrom(), Optional.ofNullable(msg.getText()));
+        String filename = msg.getFilename() + '.' + msg.getFileExtension();
 
-            final String msgText = BotsController.messageFormatter(
-                    msg.getBotFrom(), msg.getChannelFrom(), msg.getNicknameFrom(),
-                    Optional.of(text));
+        final RocketChatAttachment attachment = new RocketChatAttachment();
+        attachment.description = Optional.of(caption);
+        attachment.title = filename;
+        attachment.data = msg.getDoc();
 
-            final String msgId = bot.sendMessage(msgText,
-                    channelTo, Optional.empty());
-            return Optional.of(msgId);
-        } catch (URISyntaxException | IOException e) {
-            System.err.println("Error while storing the doc");
-            e.printStackTrace();
-        }
-
-        return Optional.empty();
+        return Optional.of(bot.sendMessage(caption, attachment, channelTo, Optional.empty()));
     }
 
     @Override
