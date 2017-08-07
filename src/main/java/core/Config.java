@@ -50,7 +50,7 @@ class Config {
     Config(String configFileName) {
         this.bots = new LinkedHashMap<>(0);
         this.channels = new LinkedHashMap<>(0);
-        this.bridges = new ArrayList(0);
+        this.bridges = new ArrayList<>(0);
 
         this.fileName = configFileName;
     }

@@ -44,14 +44,12 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.*;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 // TODO: implement a way not to exceed bot messages limit
 public class TelegramBot extends TelegramLongPollingBot implements Bot {
     private static final String USERNAME_KEY = "username";
     private static final String TOKEN_KEY = "password";
-    private static final Pattern COMPILE = Pattern.compile("\\\\s+");
 
     private static TelegramBotsApi telegramBotsApi;
     // You can't retrieve users list, so it'll store users who wrote at least one time here
@@ -108,7 +106,7 @@ public class TelegramBot extends TelegramLongPollingBot implements Bot {
         inputStream.close();
         httpConn.disconnect();
 
-        return new Triplet(output, filenameWithoutExtension, extension);
+        return new Triplet<>(output, filenameWithoutExtension, extension);
     }
 
     private void onAttachmentReceived(BotMessage botMsg, Message message,
@@ -129,8 +127,7 @@ public class TelegramBot extends TelegramLongPollingBot implements Bot {
         }
     }
 
-    private void onLocationReceived(BotMessage botMsg, Message message, double lat, double lng,
-                                    String messageId) {
+    private void onLocationReceived(BotMessage botMsg, Message message, String messageId) {
         Location location = message.getLocation();
         maps.Map worldMap = new OpenStreetMap(location.getLatitude(), location.getLongitude());
         String text = String.format("(%s, %s) -> ", location.getLatitude(),
@@ -288,15 +285,12 @@ public class TelegramBot extends TelegramLongPollingBot implements Bot {
             // Send position
             else if (message.hasLocation()) {
                 Location location = message.getLocation();
-                onLocationReceived(botMsg, message, location.getLatitude(),
-                        location.getLongitude(), messageId);
+                onLocationReceived(botMsg, message, messageId);
             }
 
             // Send contact
-            else if (null != message.getContact()) {
-                Contact contact = message.getContact();
+            else if (null != message.getContact())
                 onContactReceived(botMsg, message, messageId);
-            }
 
             // Send sticker
             else if (message.getSticker() != null) {

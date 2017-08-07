@@ -19,9 +19,9 @@ package maps;
 
 public abstract class Map {
     protected final double latitude;
-    protected final double longitude;
+    final double longitude;
 
-    protected Map(double latitude, double longitude) {
+    Map(double latitude, double longitude) {
         this.latitude = latitude;
         this.longitude = longitude;
     }
