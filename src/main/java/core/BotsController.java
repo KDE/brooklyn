@@ -42,9 +42,13 @@ public class BotsController {
                                           String nicknameFrom,
                                           Optional<String> message) {
 
-        return message.map(s -> String.format("%s/%s/%s: %s",
-                botFrom.getId(), botFrom.getChannelName(channelFrom), nicknameFrom, s)).orElseGet(() -> String.format("%s/%s/%s",
-                botFrom.getId(), botFrom.getChannelName(channelFrom), nicknameFrom));
+        final String botClassName = botFrom.getClass().getSimpleName();
+        final String channelType = botClassName.substring(0, botClassName.length() - "Bot".length());
+
+        return message.map(s -> String.format("%s (%s): %s",
+                nicknameFrom, channelType, s))
+                .orElseGet(() -> String.format("%s (%s)",
+                        nicknameFrom, channelType));
     }
 
     public void addBridge(Bot bot, String channelTo, String channelFrom) {
