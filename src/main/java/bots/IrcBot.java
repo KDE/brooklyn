@@ -157,8 +157,8 @@ public final class IrcBot implements Bot {
                 message = MessageFormat.format(resourceBundle.getString("channel-joined"), authorNickname);
             } else
                 message = MessageFormat.format(resourceBundle.getString(
-                        channelFrom.map(channel -> "channel-leaved")
-                                .orElse("server-leaved")),
+                        channelFrom.map(channel -> "channel-left")
+                                .orElse("server-left")),
                         authorNickname);
 
             BotMessage msg = new BotMessage(authorNickname, channelFromName, this);
