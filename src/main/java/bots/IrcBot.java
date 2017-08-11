@@ -26,11 +26,9 @@ import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.Invoke;
 import org.javatuples.Triplet;
 import org.kitteh.irc.client.library.Client;
-import org.kitteh.irc.client.library.element.Actor;
 import org.kitteh.irc.client.library.element.Channel;
 import org.kitteh.irc.client.library.element.User;
 import org.kitteh.irc.client.library.event.channel.ChannelMessageEvent;
-import org.kitteh.irc.client.library.event.helper.ChannelUserListChangeEvent;
 import org.kitteh.irc.client.library.feature.AuthManager;
 import org.kitteh.irc.client.library.feature.auth.SaslPlain;
 
@@ -47,7 +45,6 @@ public final class IrcBot implements Bot {
     private static final String PASSWORD_KEY = "password";
     private static final Pattern COMPILE = Pattern.compile("[\r\n]");
     private static final Pattern PATTERN = Pattern.compile("\\s+");
-    private final Collection<String> blacklist = new LinkedHashSet<>();
     private final BotsController botsController = new BotsController();
     private final ResourceBundle resourceBundle = ResourceBundle.getBundle("resources");
     private Client client;
@@ -105,11 +102,9 @@ public final class IrcBot implements Bot {
     @Handler(delivery = Invoke.Asynchronously)
     private void onMessageReceived(ChannelMessageEvent message) {
         String authorNickname = message.getActor().getNick();
-        // An user is removed from the blacklist only if writes at least one message
-        this.blacklist.remove(authorNickname);
 
-        String channelFrom = message.getChannel().getName();
         String text = message.getMessage();
+        String channelFrom = message.getChannel().getName();
 
         String[] textSpaceSplitted = PATTERN.split(text);
         if (2 == textSpaceSplitted.length &&
@@ -134,38 +129,6 @@ public final class IrcBot implements Bot {
             BotTextMessage textMessage = new BotTextMessage(msg, text);
             // An empty msgId is passed. There aren't reasons to store IRC messages
             botsController.sendMessage(textMessage, channelFrom, Optional.empty());
-        }
-    }
-
-    @Handler(delivery = Invoke.Asynchronously)
-    public void onJoin(ChannelUserListChangeEvent event) {
-        String authorNickname = event.getUser().getNick();
-
-        if (!authorNickname.equals(client.getNick())) {
-            Optional<Channel> channelFrom = event.getAffectedChannel();
-            ChannelUserListChangeEvent.Change change = event.getChange();
-
-            final String channelFromName = channelFrom.map(Actor::getName).orElse(BotsController.EVERY_CHANNEL);
-
-            if (blacklist.contains(authorNickname))
-                return;
-
-            String message;
-            if (0 == change.compareTo(ChannelUserListChangeEvent.Change.JOIN)) {
-                // An user is in the blacklist until it sends a message
-                this.blacklist.add(authorNickname);
-                message = MessageFormat.format(resourceBundle.getString("channel-joined"), authorNickname);
-            } else
-                message = MessageFormat.format(resourceBundle.getString(
-                        channelFrom.map(channel -> "channel-left")
-                                .orElse("server-left")),
-                        authorNickname);
-
-            BotMessage msg = new BotMessage(authorNickname, channelFromName, this);
-            BotTextMessage textMessage = new BotTextMessage(msg, message);
-
-            // A new, useless msgId is passed. There aren't reasons to store IRC messages
-            botsController.sendMessage(textMessage, channelFromName, Optional.empty());
         }
     }
 
