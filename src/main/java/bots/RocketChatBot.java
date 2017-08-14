@@ -54,13 +54,17 @@ public class RocketChatBot implements Bot {
 
         if (!configs.containsKey(WEBSOCKET_URL_KEY) ||
                 !configs.containsKey(USERNAME_KEY) ||
-                !configs.containsKey(PASSWORD_KEY))
+                !configs.containsKey(PASSWORD_KEY) ||
+                !configs.containsKey(FILE_UPLOAD_URL_KEY)) {
+            System.err.println("At least one key missing on Rocket.Chat bot params. ");
             return false;
+        }
 
         final URI serverUri;
         try {
             serverUri = new URI(configs.get(WEBSOCKET_URL_KEY));
         } catch (URISyntaxException e) {
+            System.err.println("websocket-url is not a valid URL. ");
             return false;
         }
         final String username = configs.get(USERNAME_KEY);
