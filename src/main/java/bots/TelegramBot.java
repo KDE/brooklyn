@@ -227,12 +227,7 @@ public class TelegramBot extends TelegramLongPollingBot implements Bot {
 
             final User user = message.getFrom();
             final Optional<String> authorNickname = Optional.ofNullable(user.getUserName());
-
-            final String author;
-            if (authorNickname.isPresent())
-                author = authorNickname.get();
-            else
-                author = user.getFirstName() + " " + user.getLastName();
+            final String author = authorNickname.orElseGet(() -> user.getFirstName() + " " + user.getLastName());
 
             if (null != message.getLeftChatMember())
                 users.remove(new Pair(Long.toString(chatId), message.getLeftChatMember()));
