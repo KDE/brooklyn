@@ -80,7 +80,7 @@ public class RocketChatBot implements Bot {
         }
 
         try {
-            this.bot = new org.kde.brooklyn.RocketChatBot(serverUri, fileUploadUrl, username, password, true) {
+            this.bot = new org.kde.brooklyn.RocketChatBot(serverUri, fileUploadUrl, username, password, false) {
                 @Override
                 public void close() {
                 }
