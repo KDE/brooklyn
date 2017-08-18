@@ -142,8 +142,10 @@ class Config {
                 !settings.containsKey(Config.CHANNELS_KEY) ||
                 !settings.containsKey(Config.BRIDGES_KEY) ||
                 !settings.containsKey(Config.WEBSERVER_KEY) ||
-                !settings.containsKey(Config.DATABASE_KEY))
+                !settings.containsKey(Config.DATABASE_KEY)) {
+            System.err.println("At least one key missing in the config file. ");
             return false;
+        }
 
         if (!(settings.get(Config.BOTS_KEY) instanceof Map) ||
                 !(settings.get(Config.CHANNELS_KEY) instanceof Map) ||

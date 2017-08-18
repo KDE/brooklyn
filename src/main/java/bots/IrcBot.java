@@ -57,8 +57,14 @@ public final class IrcBot implements Bot {
         if (!configs.containsKey(HOST_KEY))
             return false;
 
-        client = Client.builder().nick(configs.get(USERNAME_KEY))
-                .serverHost(configs.get(HOST_KEY)).build();
+        client = Client.builder()
+                .nick(configs.get(USERNAME_KEY))
+                .serverHost(configs.get(HOST_KEY))
+                .listenInput(line -> System.out.println(botId + " [I]: " + line))
+                .listenOutput(line -> System.out.println(botId + " [O]: " + line))
+                .listenException(Throwable::printStackTrace)
+                .build();
+
         if (configs.containsKey(PASSWORD_KEY)) {
             AuthManager auth = client.getAuthManager();
             auth.addProtocol(new SaslPlain(client,
