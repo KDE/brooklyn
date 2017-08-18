@@ -226,18 +226,25 @@ public class TelegramBot extends TelegramLongPollingBot implements Bot {
             final String messageId = message.getMessageId().toString();
 
             final User user = message.getFrom();
+            final Optional<String> authorNickname = Optional.ofNullable(user.getUserName());
+
+            final String author;
+            if (authorNickname.isPresent())
+                author = authorNickname.get();
+            else
+                author = user.getFirstName() + " " + user.getLastName();
+
             if (null != message.getLeftChatMember())
                 users.remove(new Pair(Long.toString(chatId), message.getLeftChatMember()));
             else
-                users.add(new Pair(Long.toString(chatId), user.getUserName()));
+                authorNickname.ifPresent(nick -> users.add(new Pair(Long.toString(chatId), nick)));
 
             Chat chat = message.getChat();
             chats.put(chat.getId(), chat.getTitle());
 
             String channelFrom = chat.getId().toString();
-            String authorNickname = user.getUserName();
 
-            BotMessage botMsg = new BotMessage(authorNickname, channelFrom, this);
+            BotMessage botMsg = new BotMessage(author, channelFrom, this);
 
             // Send image
             if (message.hasPhoto()) {
