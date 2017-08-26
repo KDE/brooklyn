@@ -84,16 +84,16 @@ public final class Application {
                     String[] channels = Application.getChannelsName(key, channelsConfig);
                     if (bot.init(key, botConfig, channels)) {
                         bots.put(key, bot);
-                        logger.info(String.format("Bot '%s' initialized.", key));
+                        logger.info("Bot '{}' initialized.", key);
                     } else
-                        logger.error(String.format("Failed to init '%s' bot.", key));
+                        logger.error("Failed to init '{}' bot.", key);
                 } else
                     logger.error(
-                            String.format("'%s' is not a valid bot.",
-                                    botConfig.get(Config.BOT_TYPE_KEY)));
+                            "'{}' is not a valid bot.",
+                            botConfig.get(Config.BOT_TYPE_KEY));
             } catch (Exception e) {
-                logger.error(String.format("Class of type '%s' can't be instantiated.",
-                        botConfig.get(Config.BOT_TYPE_KEY)), e);
+                logger.error("Class of type '{}' can't be instantiated.",
+                        botConfig.get(Config.BOT_TYPE_KEY), e);
             }
         });
 

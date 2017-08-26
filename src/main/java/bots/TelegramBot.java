@@ -343,8 +343,8 @@ public class TelegramBot extends TelegramLongPollingBot implements Bot {
             Message sentMessage = execute(message);
             return Optional.of(sentMessage.getMessageId().toString());
         } catch (TelegramApiException e) {
-            logger.error(String.format("Failed to send message from %s to TelegramBot",
-                    msg.getBotFrom().getId()), e);
+            logger.error("Failed to send message from {} to TelegramBot",
+                    msg.getBotFrom().getId(), e);
             return Optional.empty();
         }
     }
@@ -378,8 +378,8 @@ public class TelegramBot extends TelegramLongPollingBot implements Bot {
             return Optional.of(sentMessage.getMessageId().toString());
         } catch (IOException | TelegramApiException e) {
             // IOException should never happens
-            logger.warn(String.format("Failed to send message from %s to TelegramBot",
-                    msg.getBotFrom().getId()), e);
+            logger.warn("Failed to send message from {} to TelegramBot",
+                    msg.getBotFrom().getId(), e);
             return Optional.empty();
         }
     }

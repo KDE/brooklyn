@@ -81,9 +81,9 @@ public final class IrcBot implements Bot {
             try {
                 client.addChannel(channel);
             } catch (IllegalArgumentException e) {
-                logger.error(String.format("Invalid channel name '%s' on '%s'.",
+                logger.error("Invalid channel name '{}' on '{}'.",
                         channel,
-                        configs.get(HOST_KEY)), e);
+                        configs.get(HOST_KEY), e);
             }
         }
 
