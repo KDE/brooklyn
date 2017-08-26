@@ -17,6 +17,8 @@
 
 package core;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.FileInputStream;
@@ -29,6 +31,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 class Config {
+    private static final Logger logger = LogManager.getLogger(Config.class.getSimpleName());
+
     public static final String DEFAULT_FILENAME = "/etc/brooklyn/conf.yml";
     public static final String BOT_TYPE_KEY = "type";
     public static final String NAME_KEY = "name";
@@ -105,7 +109,7 @@ class Config {
             file.close();
         } catch (IOException e) {
             // Should never happen
-            e.printStackTrace();
+            logger.warn(e);
         }
 
         if (!this.isValid(settings))
@@ -143,7 +147,7 @@ class Config {
                 !settings.containsKey(Config.BRIDGES_KEY) ||
                 !settings.containsKey(Config.WEBSERVER_KEY) ||
                 !settings.containsKey(Config.DATABASE_KEY)) {
-            System.err.println("At least one key missing in the config file. ");
+            logger.fatal("At least one key missing in the config file. ");
             return false;
         }
 

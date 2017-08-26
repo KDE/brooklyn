@@ -22,6 +22,8 @@ import messages.BotDocumentMessage;
 import messages.BotDocumentType;
 import messages.BotMessage;
 import messages.BotTextMessage;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.javatuples.Triplet;
 import org.kde.brooklyn.RocketChatAttachment;
 import org.kde.brooklyn.RocketChatException;
@@ -37,6 +39,8 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 public class RocketChatBot implements Bot {
+    private static final Logger logger = LogManager.getLogger(RocketChatBot.class.getSimpleName());
+
     private static final String USERNAME_KEY = "username";
     private static final String WEBSOCKET_URL_KEY = "websocket-url";
     private static final String FILE_UPLOAD_URL_KEY = "file-upload-url";
@@ -56,7 +60,7 @@ public class RocketChatBot implements Bot {
                 !configs.containsKey(USERNAME_KEY) ||
                 !configs.containsKey(PASSWORD_KEY) ||
                 !configs.containsKey(FILE_UPLOAD_URL_KEY)) {
-            System.err.println("At least one key missing on Rocket.Chat bot params. ");
+            logger.error("At least one key missing on Rocket.Chat bot params. ");
             return false;
         }
 
@@ -64,7 +68,7 @@ public class RocketChatBot implements Bot {
         try {
             serverUri = new URI(configs.get(WEBSOCKET_URL_KEY));
         } catch (URISyntaxException e) {
-            System.err.println("websocket-url is not a valid URL. ");
+            logger.error("websocket-url is not a valid URL. ");
             return false;
         }
         final String username = configs.get(USERNAME_KEY);
@@ -74,8 +78,7 @@ public class RocketChatBot implements Bot {
         try {
             fileUploadUrl = new URL(configs.get(FILE_UPLOAD_URL_KEY));
         } catch (MalformedURLException e) {
-            System.err.println("file-upload-url is not a valid URL. ");
-            e.printStackTrace();
+            logger.error("file-upload-url is not a valid URL. ", e);
             return false;
         }
 
@@ -98,7 +101,7 @@ public class RocketChatBot implements Bot {
                 }
             };
         } catch (RocketChatException e) {
-            e.printStackTrace();
+            logger.error(e);
             return false;
         }
 

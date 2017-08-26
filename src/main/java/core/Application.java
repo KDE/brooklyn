@@ -21,6 +21,8 @@ import bots.Bot;
 import bots.TelegramBot;
 import models.FileStorage;
 import models.MessagesModel;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -30,6 +32,8 @@ import java.util.*;
 import java.util.Map.Entry;
 
 public final class Application {
+    private static final Logger logger = LogManager.getLogger(Application.class.getSimpleName());
+
     private static Connection database;
 
     public static void main(String[] args) throws InterruptedException {
@@ -41,7 +45,7 @@ public final class Application {
         try {
             conf.load();
         } catch (IOException e) {
-            System.err.println(String.format("Error while loading config file: %s.", e.getMessage()));
+            logger.fatal("Error while loading config file. ", e);
             System.exit(1);
         }
 
@@ -63,8 +67,7 @@ public final class Application {
             Application.database = DriverManager.getConnection(dbUri);
             MessagesModel.init(Application.database);
         } catch (SQLException e) {
-            System.err.println("Error loading the database");
-            e.printStackTrace();
+            logger.error("Failed loading the database. ", e);
         }
     }
 
@@ -81,14 +84,16 @@ public final class Application {
                     String[] channels = Application.getChannelsName(key, channelsConfig);
                     if (bot.init(key, botConfig, channels)) {
                         bots.put(key, bot);
-                        System.out.println(String.format("Bot '%s' initialized.", key));
+                        logger.info(String.format("Bot '%s' initialized.", key));
                     } else
-                        System.err.println(String.format("Failed to init '%s' bot.", key));
+                        logger.error(String.format("Failed to init '%s' bot.", key));
                 } else
-                    System.err.println(String.format("'%s' is not a valid bot.", botConfig.get(Config.BOT_TYPE_KEY)));
+                    logger.error(
+                            String.format("'%s' is not a valid bot.",
+                                    botConfig.get(Config.BOT_TYPE_KEY)));
             } catch (Exception e) {
-                System.err.println(String.format("Class of type '%s' can't be instantiated.", botConfig.get(Config.BOT_TYPE_KEY)));
-                e.printStackTrace();
+                logger.error(String.format("Class of type '%s' can't be instantiated.",
+                        botConfig.get(Config.BOT_TYPE_KEY)), e);
             }
         });
 
@@ -150,7 +155,7 @@ public final class Application {
                 MessagesModel.clean();
                 Application.database.close();
             } catch (SQLException e) {
-                e.printStackTrace();
+                logger.warn("Failed to close the db. ", e);
             }
 
             bots.entrySet().stream()
@@ -159,11 +164,11 @@ public final class Application {
                         try {
                             bot.close();
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            logger.warn("Failed to quit the bot " + bot.getId(), e);
                         }
                     });
 
-            System.out.println("Application terminated");
+            logger.info("Application terminated");
         }));
 
         // Wait forever unless the process is killed

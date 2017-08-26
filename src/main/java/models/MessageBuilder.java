@@ -17,11 +17,16 @@
 
 package models;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.sql.*;
 import java.util.LinkedList;
 import java.util.List;
 
 public class MessageBuilder {
+    private static final Logger logger = LogManager.getLogger(MessageBuilder.class.getSimpleName());
+
     private static Connection database;
     private final int idFrom;
     private final List<Integer> idsTo = new LinkedList<>();
@@ -52,7 +57,8 @@ public class MessageBuilder {
                     return -1;
             }
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
+            // Should never, ever happens
+            logger.warn(e);
             return -1;
         }
     }
@@ -65,7 +71,8 @@ public class MessageBuilder {
                 pstmt.setInt(2, idTo);
                 pstmt.executeUpdate();
             } catch (SQLException e) {
-                System.err.println(e.getMessage());
+                // Should never, ever happens
+                logger.warn(e);
             }
         });
     }

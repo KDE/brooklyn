@@ -23,6 +23,8 @@ import messages.BotMessage;
 import messages.BotTextMessage;
 import models.MessageBuilder;
 import models.MessagesModel;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.javatuples.Triplet;
 
 import java.util.LinkedList;
@@ -32,6 +34,8 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class BotsController {
+    private static final Logger logger = LogManager.getLogger(BotsController.class.getSimpleName());
+
     public static final String EVERY_CHANNEL = "*";
 
     // Triplet<Bot bot, String channelTo, String channelFrom>
@@ -82,7 +86,7 @@ public class BotsController {
                         msgId = sendTo.getValue0().sendMessage(
                                 (BotTextMessage) message, sendTo.getValue1());
                     else {
-                        System.err.println("Error, message type not valid.");
+                        logger.error("Message type not valid. ");
                         return;
                     }
 

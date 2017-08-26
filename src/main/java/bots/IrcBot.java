@@ -24,6 +24,8 @@ import messages.BotTextMessage;
 import models.FileStorage;
 import net.engio.mbassy.listener.Handler;
 import net.engio.mbassy.listener.Invoke;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.javatuples.Triplet;
 import org.kitteh.irc.client.library.Client;
 import org.kitteh.irc.client.library.element.Channel;
@@ -40,6 +42,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public final class IrcBot implements Bot {
+    private static final Logger logger = LogManager.getLogger(IrcBot.class.getSimpleName());
+
     private static final String USERNAME_KEY = "username";
     private static final String HOST_KEY = "host";
     private static final String PASSWORD_KEY = "password";
@@ -60,9 +64,9 @@ public final class IrcBot implements Bot {
         client = Client.builder()
                 .nick(configs.get(USERNAME_KEY))
                 .serverHost(configs.get(HOST_KEY))
-                .listenInput(line -> System.out.println(botId + " [I]: " + line))
-                .listenOutput(line -> System.out.println(botId + " [O]: " + line))
-                .listenException(Throwable::printStackTrace)
+                .listenInput(line -> logger.debug(botId + " [I]: " + line))
+                .listenOutput(line -> logger.debug(botId + " [O]: " + line))
+                .listenException(logger::error)
                 .build();
 
         if (configs.containsKey(PASSWORD_KEY)) {
@@ -77,8 +81,9 @@ public final class IrcBot implements Bot {
             try {
                 client.addChannel(channel);
             } catch (IllegalArgumentException e) {
-                System.err.println(String.format("Invalid channel name '%s' on '%s'.", channel, configs.get(HOST_KEY)));
-                e.printStackTrace();
+                logger.error(String.format("Invalid channel name '%s' on '%s'.",
+                        channel,
+                        configs.get(HOST_KEY)), e);
             }
         }
 
@@ -167,8 +172,7 @@ public final class IrcBot implements Bot {
                         msg.getNicknameFrom(), Optional.ofNullable(fileUrl)));
             }
         } catch (URISyntaxException | IOException e) {
-            System.err.println("Error while storing the doc");
-            e.printStackTrace();
+            logger.error("Error while storing the doc. ", e);
         }
 
         // There aren't reasons to store IRC messages

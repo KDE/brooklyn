@@ -24,6 +24,8 @@ import messages.BotDocumentType;
 import messages.BotMessage;
 import messages.BotTextMessage;
 import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.javatuples.Pair;
 import org.javatuples.Triplet;
 import org.telegram.telegrambots.ApiContextInitializer;
@@ -48,6 +50,8 @@ import java.util.stream.Collectors;
 
 // TODO: implement a way not to exceed bot messages limit
 public class TelegramBot extends TelegramLongPollingBot implements Bot {
+    private static final Logger logger = LogManager.getLogger(TelegramBot.class.getSimpleName());
+
     private static final String USERNAME_KEY = "username";
     private static final String TOKEN_KEY = "password";
 
@@ -76,7 +80,7 @@ public class TelegramBot extends TelegramLongPollingBot implements Bot {
         try {
             telegramBotsApi.registerBot(this);
         } catch (TelegramApiRequestException e) {
-            e.printStackTrace();
+            logger.error(e);
             return false;
         }
 
@@ -122,8 +126,7 @@ public class TelegramBot extends TelegramLongPollingBot implements Bot {
             botsController.sendMessage(documentMessage,
                     Long.toString(message.getChatId()), Optional.of(msgId));
         } catch (TelegramApiException | IOException e) {
-            System.err.println("Error loading the media received");
-            e.printStackTrace();
+            logger.error("Error loading the media received. ", e);
         }
     }
 
@@ -187,8 +190,7 @@ public class TelegramBot extends TelegramLongPollingBot implements Bot {
             try {
                 execute(messageToSend);
             } catch (TelegramApiException e) {
-                System.err.println("Failed to send message from TelegramBot");
-                e.printStackTrace();
+                logger.error("Failed to send message from TelegramBot. ", e);
             }
         } else {
             BotTextMessage textMessage = new BotTextMessage(botMsg, text);
@@ -341,8 +343,8 @@ public class TelegramBot extends TelegramLongPollingBot implements Bot {
             Message sentMessage = execute(message);
             return Optional.of(sentMessage.getMessageId().toString());
         } catch (TelegramApiException e) {
-            System.err.println(String.format("Failed to send message from %s to TelegramBot", msg.getBotFrom().getId()));
-            e.printStackTrace();
+            logger.error(String.format("Failed to send message from %s to TelegramBot",
+                    msg.getBotFrom().getId()), e);
             return Optional.empty();
         }
     }
@@ -376,9 +378,8 @@ public class TelegramBot extends TelegramLongPollingBot implements Bot {
             return Optional.of(sentMessage.getMessageId().toString());
         } catch (IOException | TelegramApiException e) {
             // IOException should never happens
-            e.printStackTrace();
-            System.err.println(String.format("Failed to send message from %s to TelegramBot",
-                    msg.getBotFrom().getId()));
+            logger.warn(String.format("Failed to send message from %s to TelegramBot",
+                    msg.getBotFrom().getId()), e);
             return Optional.empty();
         }
     }
@@ -443,8 +444,7 @@ public class TelegramBot extends TelegramLongPollingBot implements Bot {
         try {
             execute(text);
         } catch (TelegramApiException e) {
-            System.out.println("Waring: message text not found, trying to edit that as a caption...");
-            e.printStackTrace(System.out);
+            logger.info("Message text not found, trying to edit that as a caption. ", e);
 
             EditMessageCaption caption = new EditMessageCaption();
             caption.setChatId(channelTo);
@@ -454,8 +454,7 @@ public class TelegramBot extends TelegramLongPollingBot implements Bot {
             try {
                 execute(caption);
             } catch (TelegramApiException e1) {
-                System.err.println("Error while changing img caption.");
-                e1.printStackTrace();
+                logger.error("Error while changing img caption. ", e1);
             }
         }
     }

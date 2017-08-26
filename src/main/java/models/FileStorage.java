@@ -18,6 +18,8 @@
 package models;
 
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -33,6 +35,8 @@ import java.util.Date;
 import java.util.Map;
 
 public class FileStorage {
+    private static final Logger logger = LogManager.getLogger(FileStorage.class.getSimpleName());
+
     private static Map<String, String> webserverConfig;
 
     public static void init(Map<String, String> webserverConfig) {
@@ -45,7 +49,7 @@ public class FileStorage {
             digest = MessageDigest.getInstance("SHA-256");
         } catch (NoSuchAlgorithmException e) {
             // Should never happens
-            e.printStackTrace();
+            logger.warn(e);
         }
 
         byte[] hash = digest.digest(data);
@@ -75,7 +79,8 @@ public class FileStorage {
             try (FileOutputStream fos = new FileOutputStream(file)) {
                 fos.write(data);
             } catch (FileNotFoundException e) {
-                e.printStackTrace();
+                // Should never, ever happens
+                logger.warn(e);
             }
         }
 

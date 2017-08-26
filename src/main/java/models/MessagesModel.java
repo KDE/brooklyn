@@ -17,10 +17,15 @@
 
 package models;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.sql.*;
 import java.util.Optional;
 
 public class MessagesModel {
+    private static final Logger logger = LogManager.getLogger(MessagesModel.class.getSimpleName());
+
     private static Connection database;
 
     public static void init(Connection database) throws SQLException {
@@ -54,7 +59,7 @@ public class MessagesModel {
             createTables.execute(deleteBridge);
             createTables.execute(deleteMessages);
         } catch (SQLException e) {
-            System.err.println(e.getMessage());
+            logger.warn("Failed to clean the database. ", e);
         }
     }
 
@@ -80,7 +85,8 @@ public class MessagesModel {
                     output = Optional.ofNullable(rs.getString("message"));
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            // Should never, ever happens
+            logger.warn(e);
         }
 
         return output;
