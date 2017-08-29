@@ -50,7 +50,7 @@ import java.util.stream.Collectors;
 
 // TODO: implement a way not to exceed bot messages limit
 public class TelegramBot extends TelegramLongPollingBot implements Bot {
-    private static final Logger logger = LogManager.getLogger(TelegramBot.class.getSimpleName());
+    private Logger logger;
 
     private static final String USERNAME_KEY = "username";
     private static final String TOKEN_KEY = "password";
@@ -75,6 +75,8 @@ public class TelegramBot extends TelegramLongPollingBot implements Bot {
 
     @Override
     public boolean init(String botId, Map<String, String> configs, String[] channels) {
+        logger = LogManager.getLogger(TelegramBot.class.getSimpleName() + ":" + botId);
+
         this.configs = configs;
 
         try {

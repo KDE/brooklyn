@@ -39,7 +39,7 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 public class RocketChatBot implements Bot {
-    private static final Logger logger = LogManager.getLogger(RocketChatBot.class.getSimpleName());
+    private Logger logger;
 
     private static final String USERNAME_KEY = "username";
     private static final String WEBSOCKET_URL_KEY = "websocket-url";
@@ -54,6 +54,7 @@ public class RocketChatBot implements Bot {
     @Override
     public boolean init(final String botId, final Map<String, String> configs,
                         final String[] channels) {
+        logger = LogManager.getLogger(RocketChatBot.class.getSimpleName() + ":" + botId);
         this.botId = botId;
 
         if (!configs.containsKey(WEBSOCKET_URL_KEY) ||

@@ -42,7 +42,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public final class IrcBot implements Bot {
-    private static final Logger logger = LogManager.getLogger(IrcBot.class.getSimpleName());
+    private Logger logger;
 
     private static final String USERNAME_KEY = "username";
     private static final String HOST_KEY = "host";
@@ -56,6 +56,8 @@ public final class IrcBot implements Bot {
 
     @Override
     public boolean init(String botId, Map<String, String> configs, String[] channels) {
+        LogManager.getLogger(IrcBot.class.getSimpleName() + ":" + botId);
+
         if (!configs.containsKey(USERNAME_KEY))
             return false;
         if (!configs.containsKey(HOST_KEY))
@@ -64,8 +66,8 @@ public final class IrcBot implements Bot {
         client = Client.builder()
                 .nick(configs.get(USERNAME_KEY))
                 .serverHost(configs.get(HOST_KEY))
-                .listenInput(line -> logger.debug(botId + " [I]: " + line))
-                .listenOutput(line -> logger.debug(botId + " [O]: " + line))
+                .listenInput(line -> logger.debug("[I]: " + line))
+                .listenOutput(line -> logger.debug("[O]: " + line))
                 .listenException(logger::error)
                 .build();
 
