@@ -56,7 +56,7 @@ public final class IrcBot implements Bot {
 
     @Override
     public boolean init(String botId, Map<String, String> configs, String[] channels) {
-        LogManager.getLogger(IrcBot.class.getSimpleName() + ":" + botId);
+        logger = LogManager.getLogger(IrcBot.class.getSimpleName() + ":" + botId);
 
         if (!configs.containsKey(USERNAME_KEY))
             return false;
