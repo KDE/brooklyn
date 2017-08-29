@@ -20,7 +20,8 @@ The default path is `/etc/brooklyn/conf.yml` but you can define a custom path, p
 
 If you want to automate the process of configuring it on Debian 9 you can use [brooklyn-ansible](https://github.com/Davide95/brooklyn-ansible/).
 
-It uses log4j2 to log, see log4j2.xml and log4j2-test for more infos.
+It uses log4j2 to log, see log4j2.xml for more infos.
+Consider using a log4j2-test.xml for debug purposes.
 
 ### Telegram bot
 
