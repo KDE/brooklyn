@@ -84,7 +84,7 @@ public class RocketChatBot implements Bot {
         }
 
         try {
-            this.bot = new org.kde.brooklyn.RocketChatBot(serverUri, fileUploadUrl, username, password, false) {
+            this.bot = new org.kde.brooklyn.RocketChatBot(serverUri, fileUploadUrl, username, password) {
                 @Override
                 public void close() {
                 }
@@ -105,6 +105,9 @@ public class RocketChatBot implements Bot {
             logger.error(e);
             return false;
         }
+
+        bot.listenInput(logger::debug);
+        bot.listenException(logger::error);
 
         if (!bot.isLogged())
             return false;
