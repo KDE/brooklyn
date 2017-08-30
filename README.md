@@ -1,4 +1,4 @@
-``# Brooklyn
+# Brooklyn
 
 Brooklyn is intended to be a protocol-independent chat-bridge to allow messages forward to and from various chat systems.
 
