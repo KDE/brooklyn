@@ -108,6 +108,7 @@ public class RocketChatBot implements Bot {
 
         bot.listenInput(logger::debug);
         bot.listenException(logger::error);
+        bot.listenOutput(logger::debug);
 
         if (!bot.isLogged())
             return false;
