@@ -49,7 +49,7 @@ bots:
     username: "JhonBot"
     password: "blablabla" # The token key
  ibot:
-    type: IrcBot
+    type: IRCBot
     username: "skynet"
     password: "123456" # Optional
     host: "url.of.the.host.com"
