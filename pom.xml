@@ -10,7 +10,7 @@
 
     <groupId>org.kde.brooklyn</groupId>
     <artifactId>Brooklyn</artifactId>
-    <version>0.3.3-SNAPSHOT</version>
+    <version>0.3.3</version>
 
     <dependencies>
         <dependency>
