@@ -41,6 +41,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+// TODO: substitute IrcBot with IRCBot
 public final class IrcBot implements Bot {
     private Logger logger;
 
