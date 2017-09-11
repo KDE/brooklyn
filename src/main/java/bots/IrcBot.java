@@ -114,6 +114,7 @@ public class IrcBot implements Bot {
         for (String channel : channels) {
             try {
                 client.addChannel(channel);
+                logger.info("Joined '{}'", channel);
             } catch (IllegalArgumentException e) {
                 logger.error("Invalid channel name '{}' on '{}'.",
                         channel,
