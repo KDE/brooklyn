@@ -31,8 +31,10 @@ import org.kitteh.irc.client.library.Client;
 import org.kitteh.irc.client.library.element.Channel;
 import org.kitteh.irc.client.library.element.User;
 import org.kitteh.irc.client.library.event.channel.ChannelMessageEvent;
+import org.kitteh.irc.client.library.event.client.ClientConnectedEvent;
 import org.kitteh.irc.client.library.feature.AuthManager;
 import org.kitteh.irc.client.library.feature.auth.SaslPlain;
+import org.kitteh.irc.client.library.feature.defaultmessage.SimpleDefaultMessageMap;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -54,6 +56,9 @@ public class IrcBot implements Bot {
     private Client client;
     private String botId;
 
+    private Map<String, String> configs;
+    private String[] channels;
+
     @Override
     public boolean init(String botId, Map<String, String> configs, String[] channels) {
         logger = LogManager.getLogger(IrcBot.class.getSimpleName() + ":" + botId);
@@ -69,27 +74,13 @@ public class IrcBot implements Bot {
                 .listenInput(line -> logger.debug("[I]: " + line))
                 .listenOutput(line -> logger.debug("[O]: " + line))
                 .listenException(logger::error)
+                .defaultMessageMap(new SimpleDefaultMessageMap())
                 .build();
 
-        if (configs.containsKey(PASSWORD_KEY)) {
-            AuthManager auth = client.getAuthManager();
-            auth.addProtocol(new SaslPlain(client,
-                    client.getIntendedNick(), configs.get(PASSWORD_KEY)));
-        }
-
         client.getEventManager().registerEventListener(this);
-
-        for (String channel : channels) {
-            try {
-                client.addChannel(channel);
-            } catch (IllegalArgumentException e) {
-                logger.error("Invalid channel name '{}' on '{}'.",
-                        channel,
-                        configs.get(HOST_KEY), e);
-            }
-        }
-
         this.botId = botId;
+        this.configs = configs;
+        this.channels = channels;
 
         return true;
     }
@@ -110,6 +101,25 @@ public class IrcBot implements Bot {
 
         // There aren't reasons to store IRC messages
         return Optional.empty();
+    }
+
+    @Handler
+    private void onClientConnected(ClientConnectedEvent event) {
+        if (configs.containsKey(PASSWORD_KEY)) {
+            AuthManager auth = client.getAuthManager();
+            auth.addProtocol(new SaslPlain(client,
+                    client.getIntendedNick(), configs.get(PASSWORD_KEY)));
+        }
+
+        for (String channel : channels) {
+            try {
+                client.addChannel(channel);
+            } catch (IllegalArgumentException e) {
+                logger.error("Invalid channel name '{}' on '{}'.",
+                        channel,
+                        configs.get(HOST_KEY), e);
+            }
+        }
     }
 
     @Handler(delivery = Invoke.Asynchronously)
