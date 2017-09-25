@@ -17,9 +17,13 @@
 
 package bots;
 
+import core.BotsController;
 import messages.BotDocumentMessage;
 import messages.BotTextMessage;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -28,24 +32,36 @@ import java.util.Optional;
  * A new way to manage RocketChat bots, using the official lib
  */
 public class RocketChatAlphaBot implements Bot {
+    private final BotsController botsController = new BotsController();
+    private Logger logger;
+    private String botId;
+
     @Override
     public boolean init(String botId, Map<String, String> configs, String[] channels) {
+        logger = LogManager.getLogger(RocketChatAlphaBot.class.getSimpleName() + ":" + botId);
+
+        this.botId = botId;
         return false;
     }
 
     @Override
-    public void addBridge(Bot bot, String channelTo, String channelFrom) {
+    public String getChannelName(String channelId) {
+        return channelId;
+    }
 
+    @Override
+    public void addBridge(Bot bot, String channelTo, String channelFrom) {
+        botsController.addBridge(bot, channelTo, channelFrom);
     }
 
     @Override
     public Optional<String> sendMessage(BotTextMessage msg, String channelTo) {
-        return null;
+        return Optional.empty();
     }
 
     @Override
     public Optional<String> sendMessage(BotDocumentMessage msg, String channelTo) {
-        return null;
+        return Optional.empty();
     }
 
     @Override
@@ -55,12 +71,12 @@ public class RocketChatAlphaBot implements Bot {
 
     @Override
     public List<String> getUsers(String channel) {
-        return null;
+        return new ArrayList<>(0);
     }
 
     @Override
     public String getId() {
-        return null;
+        return botId;
     }
 
     @Override
