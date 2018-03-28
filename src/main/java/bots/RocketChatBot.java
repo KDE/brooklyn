@@ -54,7 +54,7 @@ public class RocketChatBot implements Bot {
     @Override
     public boolean init(final String botId, final Map<String, String> configs,
                         final String[] channels) {
-        logger = LogManager.getLogger(RocketChatBot.class.getSimpleName() + ":" + botId);
+        logger = LogManager.getLogger(RocketChatBot.class.getSimpleName() + ':' + botId);
         this.botId = botId;
 
         if (!configs.containsKey(WEBSOCKET_URL_KEY) ||
